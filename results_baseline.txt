@@ -1,0 +1,2 @@
+./generated_instances/baseline_1.txt OPTIMAL 223136.00 1.70 14281.00 404.00
+./generated_instances/baseline_2.txt OPTIMAL 317975.00 1190.98 11745067.00 265058.00
