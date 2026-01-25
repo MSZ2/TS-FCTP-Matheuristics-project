@@ -1,0 +1,4 @@
+generated_instances/small_10.txt OPTIMAL 258236.00 7.38 124646.00 5628.00
+generated_instances/small_11.txt OPTIMAL 286991.00 84.08 1168471.00 37922.00
+generated_instances/small_10.txt OPTIMAL 258236.00 7.76 124646.00 5628.00
+generated_instances/small_11.txt OPTIMAL 286991.00 87.94 1168471.00 37922.00
