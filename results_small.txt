@@ -1,4 +1,12 @@
+generated_instances/small_1.txt OPTIMAL 150568.00 1.30 494.00 13.00
+generated_instances/small_2.txt OPTIMAL 156022.00 1.51 969.00 48.00
+generated_instances/small_3.txt OPTIMAL 161224.00 1.92 745.00 60.00
+generated_instances/small_4.txt OPTIMAL 186537.00 1.90 467.00 11.00
+generated_instances/small_5.txt OPTIMAL 213785.00 2.06 754.00 18.00
+generated_instances/small_6.txt OPTIMAL 188954.00 7.15 9348.00 583.00
+generated_instances/small_7.txt OPTIMAL 231984.00 17.97 22618.00 1308.00
+generated_instances/small_8.txt OPTIMAL 202467.00 11.79 8786.00 367.00
+generated_instances/small_9.txt OPTIMAL 210740.00 25.79 28303.00 1551.00
 generated_instances/small_10.txt OPTIMAL 258236.00 7.38 124646.00 5628.00
 generated_instances/small_11.txt OPTIMAL 286991.00 84.08 1168471.00 37922.00
-generated_instances/small_10.txt OPTIMAL 258236.00 7.76 124646.00 5628.00
-generated_instances/small_11.txt OPTIMAL 286991.00 87.94 1168471.00 37922.00
+

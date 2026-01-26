@@ -1,2 +1,4 @@
 ./generated_instances/baseline_1.txt OPTIMAL 223136.00 1.70 14281.00 404.00
 ./generated_instances/baseline_2.txt OPTIMAL 317975.00 1190.98 11745067.00 265058.00
+./generated_instances/baseline_3.txt OPTIMAL 322093.00 3695.07 21479433.00 385399.00
+generated_instances/baseline_4.txt FEASIBLE 399062.00 7189.11 1280093.00 31964.00
