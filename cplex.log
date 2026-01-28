@@ -1,0 +1,1 @@
+  g++ -std=c++17 solve_tsfctp.cpp -O2 -I/opt/ibm/ILOG/CPLEX_Studio2211/concert/include -I/opt/ibm/ILOG/CPLEX_Studio2211/cplex/include -L/opt/ibm/ILOG/CPLEX_Studio2211/cplex/lib/x86-64_linux/static_pic -L/opt/ibm/ILOG/CPLEX_Studio2211/concert/lib/x86-64_linux/static_pic -lilocplex -lcplex -lconcert -lpthread -lm -ldl -o solve_tsfctp 

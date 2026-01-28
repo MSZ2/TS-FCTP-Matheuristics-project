@@ -9,4 +9,13 @@ generated_instances/small_8.txt OPTIMAL 202467.00 11.79 8786.00 367.00
 generated_instances/small_9.txt OPTIMAL 210740.00 25.79 28303.00 1551.00
 generated_instances/small_10.txt OPTIMAL 258236.00 7.38 124646.00 5628.00
 generated_instances/small_11.txt OPTIMAL 286991.00 84.08 1168471.00 37922.00
+generated_instances/small_12.txt FEASIBLE 284643.00 1818.90 5118195 119052
+generated_instances/small_13.txt OPTIMAL 278044.00 43.03 100035 4193
+generated_instances/small_14.txt OPTIMAL 284648.00 2509.23 7374762 207598
+generated_instances/small_15.txt OPTIMAL 315417.00 1585.38 3325528 71013
+generated_instances/small_16.txt FEASIBLE 349820.00 3479.76 6251954 101284
+generated_instances/small_17.txt FEASIBLE 368942.00 2606.42 5470859 128331
+generated_instances/small_18.txt FEASIBLE 349036.00 4359.04 8837101 171084
+generated_instances/small_19.txt FEASIBLE 351345.00 4018.04 7789292 142852
+generated_instances/small_20.txt FEASIBLE 400600.00 3203.13 5178550 110993 
 
