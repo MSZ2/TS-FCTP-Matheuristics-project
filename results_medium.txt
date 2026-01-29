@@ -1,0 +1,2 @@
+generated_instances/medium_11.txt FEASIBLE 551427.00 4242.68 8148431 228474
+generated_instances/medium_12.txt FEASIBLE 478570.00 7194.29 9805905 250345
