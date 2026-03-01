@@ -1,0 +1,713 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[serbian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{xcolor} % za boje
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{teal},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  breaklines=true,
+  frame=single,
+  tabsize=2
+}
+
+
+% Definicija crvenog box-a za napomene
+\tcbset{
+    myrednote/.style={
+        colback=red!5,        % svetlo crvena pozadina
+        colframe=red!75!black, % tamno crvena ivica
+        fonttitle=\bfseries,
+        coltitle=black!80!black,
+        boxrule=0.8pt,
+        arc=4pt,
+        left=2mm, right=2mm, top=1mm, bottom=1mm
+    }
+}
+
+
+\title{\textbf{TS-FCTP (Two-Stage Fixed Charge Transportation Problem)}\\
+Seminarski rad -- Tema broj 8}
+\author{
+Mateja Stojanović (mi251107)
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Osnovne informacije}
+\begin{itemize}
+    \item \textbf{Ime i prezime:} Mateja Stojanović
+    \item \textbf{Broj indeksa:} mi251107
+    \item \textbf{Tema/Zadatak:} Tema broj 8
+\end{itemize}
+
+\section{Opis problema}
+Problem TS-FCTP (Two-Stage Fixed Charge Transportation Problem) predstavlja problem transporta u dve faze kroz mrežu sa tri nivoa čvorova:
+\begin{itemize}
+    \item proizvođači (izvori) $i \in I$,
+    \item distributivni centri $j \in J$,
+    \item kupci $k \in K$.
+\end{itemize}
+
+Roba se transportuje u dve etape:
+\[
+i \rightarrow j \rightarrow k.
+\]
+
+Za svaku vezu u mreži postoje:
+\begin{itemize}
+    \item \textbf{varijabilni trošak} po jedinici protoka,
+    \item \textbf{fiksni trošak} koji se plaća ukoliko se veza koristi (tj. ukoliko se šalje neka količina robe).
+\end{itemize}
+
+Cilj je minimizacija ukupnog troška transporta uz poštovanje ograničenja kapaciteta izvora i ispunjenje potražnje kupaca.
+
+\section{Matematička formulacija problema}
+
+\subsection{Skupovi i parametri}
+\begin{itemize}
+    \item $I$ -- skup proizvođača (izvora), $|I| = I$,
+    \item $J$ -- skup distributivnih centara, $|J| = J$,
+    \item $K$ -- skup kupaca, $|K| = K$,
+    \item $s_i$ -- raspoloživa ponuda izvora $i$,
+    \item $d_k$ -- potražnja kupca $k$,
+    \item $b_{ij}$ -- varijabilni trošak transporta od izvora $i$ do centra $j$,
+    \item $f_{ij}$ -- fiksni trošak aktiviranja veze $(i,j)$,
+    \item $c_{jk}$ -- varijabilni trošak transporta od centra $j$ do kupca $k$,
+    \item $g_{jk}$ -- fiksni trošak aktiviranja veze $(j,k)$.
+\end{itemize}
+
+\subsection{Promenljive}
+\begin{itemize}
+    \item $x_{ij} \ge 0$ -- količina koja se transportuje od izvora $i$ do centra $j$,
+    \item $y_{jk} \ge 0$ -- količina koja se transportuje od centra $j$ do kupca $k$,
+    \item $z_{ij} \in \{0,1\}$ -- indikator da li se koristi veza $(i,j)$,
+    \item $w_{jk} \in \{0,1\}$ -- indikator da li se koristi veza $(j,k)$.
+\end{itemize}
+
+\subsection{Funkcija cilja}
+Minimizuje se suma varijabilnih i fiksnih troškova u obe faze:
+\[
+\min \sum_{i \in I}\sum_{j \in J} \left( b_{ij}x_{ij} + f_{ij}z_{ij} \right)
++ \sum_{j \in J}\sum_{k \in K} \left( c_{jk}y_{jk} + g_{jk}w_{jk} \right).
+\]
+
+\subsection{Ograničenja}
+\paragraph{Ograničenje ponude izvora}
+\[
+\sum_{j \in J} x_{ij} \le s_i, \quad \forall i \in I.
+\]
+
+\paragraph{Zadovoljenje potražnje kupaca}
+\[
+\sum_{j \in J} y_{jk} = d_k, \quad \forall k \in K.
+\]
+
+\paragraph{Balans protoka u distributivnim centrima}
+Ukupni ulaz u centar mora biti jednak ukupnom izlazu:
+\[
+\sum_{i \in I} x_{ij} - \sum_{k \in K} y_{jk} = 0, \quad \forall j \in J.
+\]
+
+\paragraph{Aktivacija fiksnih troškova (Big-M povezivanje)}
+Ako se veza koristi, binarna promenljiva mora biti 1:
+\[
+x_{ij} \le s_i z_{ij}, \quad \forall i \in I, \forall j \in J,
+\]
+\[
+y_{jk} \le d_k w_{jk}, \quad \forall j \in J, \forall k \in K.
+\]
+
+\section{Značenje funkcije cilja i uslova}
+\begin{itemize}
+    \item \textbf{Funkcija cilja} predstavlja ukupni trošak transporta:
+    \begin{itemize}
+        \item $b_{ij}x_{ij}$ i $c_{jk}y_{jk}$ su varijabilni troškovi proporcionalni količini robe,
+        \item $f_{ij}z_{ij}$ i $g_{jk}w_{jk}$ su fiksni troškovi koji se plaćaju jednom ako se veza koristi.
+    \end{itemize}
+    \item \textbf{Ograničenja ponude} obezbeđuju da nijedan izvor ne šalje više od raspoložive količine.
+    \item \textbf{Ograničenja potražnje} garantuju da se zahtevi svih kupaca tačno zadovolje.
+    \item \textbf{Balans u centrima} znači da distributivni centri ne mogu praviti zalihe niti stvarati robu, već samo prosleđuju protok.
+    \item \textbf{Big-M ograničenja} povezuju kontinualne tokove sa binarnim promenljivama, čime se modeluje fiksni trošak aktivacije veze.
+\end{itemize}
+
+\section{Instance korišćene u eksperimentu}
+
+\subsection{Podela instanci (male, srednje, velike, baseline)}
+Instance su generisane u tri grupe na osnovu dimenzija $(I,J,K)$:
+
+\subsubsection*{Male instance (20 instanci)}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Instanca} & \textbf{Dimenzije} $(I,J,K)$ \\
+\midrule
+small\_1  & (4,8,16) \\
+small\_2  & (4,8,20) \\
+small\_3  & (4,10,20) \\
+small\_4  & (6,12,24) \\
+small\_5  & (6,12,30) \\
+small\_6  & (6,15,30) \\
+small\_7  & (8,16,32) \\
+small\_8  & (8,16,40) \\
+small\_9  & (8,20,40) \\
+small\_10 & (10,20,40) \\
+small\_11 & (10,20,50) \\
+small\_12 & (10,25,50) \\
+small\_13 & (12,24,48) \\
+small\_14 & (12,24,60) \\
+small\_15 & (12,30,60) \\
+small\_16 & (14,28,56) \\
+small\_17 & (14,28,70) \\
+small\_18 & (16,32,64) \\
+small\_19 & (16,32,80) \\
+small\_20 & (18,36,72) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Srednje instance (20 instanci)}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Instanca} & \textbf{Dimenzije} $(I,J,K)$ \\
+\midrule
+medium\_1  & (20,40,80) \\
+medium\_2  & (20,40,100) \\
+medium\_3  & (20,50,100) \\
+medium\_4  & (25,50,100) \\
+medium\_5  & (25,50,125) \\
+medium\_6  & (25,60,120) \\
+medium\_7  & (30,60,120) \\
+medium\_8  & (30,60,150) \\
+medium\_9  & (30,75,150) \\
+medium\_10 & (35,70,140) \\
+medium\_11 & (35,70,175) \\
+medium\_12 & (40,80,160) \\
+medium\_13 & (40,80,200) \\
+medium\_14 & (45,90,180) \\
+medium\_15 & (45,90,225) \\
+medium\_16 & (50,100,200) \\
+medium\_17 & (50,100,250) \\
+medium\_18 & (55,110,220) \\
+medium\_19 & (55,110,275) \\
+medium\_20 & (60,120,240) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Velike instance (20 instanci)}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Instanca} & \textbf{Dimenzije} $(I,J,K)$ \\
+\midrule
+large\_1  & (70,140,280) \\
+large\_2  & (70,140,350) \\
+large\_3  & (80,160,320) \\
+large\_4  & (80,160,400) \\
+large\_5  & (90,180,360) \\
+large\_6  & (90,180,450) \\
+large\_7  & (100,200,400) \\
+large\_8  & (100,200,500) \\
+large\_9  & (110,220,440) \\
+large\_10 & (110,220,550) \\
+large\_11 & (120,240,480) \\
+large\_12 & (120,240,600) \\
+large\_13 & (130,260,520) \\
+large\_14 & (130,260,650) \\
+large\_15 & (140,280,560) \\
+large\_16 & (140,280,700) \\
+large\_17 & (150,300,600) \\
+large\_18 & (150,300,750) \\
+large\_19 & (160,320,640) \\
+large\_20 & (160,320,800) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Baseline instance}
+Pored tri osnovne grupe instanci (male, srednje i velike), generisana je i posebna grupa \textit{baseline} instanci.
+Ove instance služe kao referentni skup za poređenje performansi solvera, jer imaju umerene dimenzije.
+
+Baseline grupa sadrži 4 instance sledećih dimenzija $(I,J,K)$:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Instanca} & \textbf{Dimenzije} $(I,J,K)$ \\
+\midrule
+baseline\_1 & (10,20,40) \\
+baseline\_2 & (15,25,50) \\
+baseline\_3 & (20,30,60) \\
+baseline\_4 & (25,40,80) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\subsection{Primer jedne manje instance}
+Format instance fajla je:
+\begin{itemize}
+    \item prva linija: $I\ J\ K$
+    \item druga linija: ponude $s_i$
+    \item treća linija: potražnje $d_k$
+    \item zatim matrice troškova: $b_{ij}$, $f_{ij}$, $c_{jk}$, $g_{jk}$
+\end{itemize}
+
+Primer (struktura) male instance \texttt{small\_1.txt} dimenzija $(4,8,16)$:
+\begin{verbatim}
+4 8 16
+80 80 80 80
+... (16 vrednosti potraznje koje zbirno daju 320)
+... (matrica b_ij dim 4x8)
+... (matrica f_ij dim 4x8)
+... (matrica c_jk dim 8x16)
+... (matrica g_jk dim 8x16)
+\end{verbatim}
+
+\section{Generisanje instanci}
+Instance su generisane programom \texttt{generator.cpp}. Koordinate čvorova se nasumično biraju iz opsega $[-400,400]$,
+a rastojanja se računaju Euklidskom metrikom i zaokružuju na dole.
+
+Ponude su fiksne:
+\[
+s_i = 80 \quad \forall i \in I,
+\]
+dok su potražnje inicijalno generisane uniformno u opsegu $[10,30]$, a zatim se koriguju tako da važi:
+\[
+\sum_{k \in K} d_k = \sum_{i \in I} s_i.
+\]
+
+Varijabilni troškovi su proporcionalni rastojanju, dok se fiksni troškovi dobijaju množenjem rastojanja slučajnim faktorom:
+\begin{itemize}
+    \item za prvu fazu faktor $r_f \in [10,15]$,
+    \item za drugu fazu faktor $r_g \in [5,10]$.
+\end{itemize}
+
+\subsection*{Kod generatora instanci (\texttt{generator.cpp})}
+\begin{lstlisting}[language=C++]
+#include <fstream>
+#include <vector>
+#include <cmath>
+#include <random>
+#include <string>
+
+struct Node {
+    int x, y;
+};
+
+int dist(const Node& a, const Node& b) {
+    return (int)std::floor(
+        std::sqrt((a.x - b.x)*(a.x - b.x) +
+                  (a.y - b.y)*(a.y - b.y))
+        );
+}
+
+void generate_group(const std::string& prefix,
+                    const std::vector<std::vector<int>>& dims,
+                    std::mt19937& rng) {
+
+    std::uniform_int_distribution<int> coord(-400,400);
+    std::uniform_int_distribution<int> rf(10,15);
+    std::uniform_int_distribution<int> rg(5,10);
+    std::uniform_int_distribution<int> dem(10,30);
+
+    for (int t = 0; t < (int)dims.size(); t++) {
+        int I = dims[t][0];
+        int J = dims[t][1];
+        int K = dims[t][2];
+
+        std::vector<Node> P(I), D(J), C(K);
+        for (auto& x : P) x = {coord(rng), coord(rng)};
+        for (auto& x : D) x = {coord(rng), coord(rng)};
+        for (auto& x : C) x = {coord(rng), coord(rng)};
+
+        std::vector<int> s(I, 80);
+        std::vector<int> d(K);
+        int supply = I * 80, demand = 0;
+
+        for (int k = 0; k < K; k++) {
+            d[k] = dem(rng);
+            demand += d[k];
+        }
+
+        for (int k = 0; demand != supply; k = (k+1)%K) {
+            if (demand > supply && d[k] > 1) {
+                d[k]--; demand--;
+            } else if (demand < supply) {
+                d[k]++; demand++;
+            }
+        }
+
+        std::ofstream out("generated_instances/" + prefix +
+                          "_" + std::to_string(t+1) + ".txt");
+
+        out << I << " " << J << " " << K << "\n";
+
+        for (int i = 0; i < I; i++) out << s[i] << " ";
+        out << "\n";
+
+        for (int k = 0; k < K; k++) out << d[k] << " ";
+        out << "\n";
+
+        for (int i = 0; i < I; i++) {
+            for (int j = 0; j < J; j++)
+                out << dist(P[i], D[j]) << " ";
+            out << "\n";
+        }
+
+        for (int i = 0; i < I; i++) {
+            int r = rf(rng);
+            for (int j = 0; j < J; j++)
+                out << dist(P[i], D[j]) * r << " ";
+            out << "\n";
+        }
+
+        for (int j = 0; j < J; j++) {
+            for (int k = 0; k < K; k++)
+                out << dist(D[j], C[k]) << " ";
+            out << "\n";
+        }
+
+        for (int j = 0; j < J; j++) {
+            int r = rg(rng);
+            for (int k = 0; k < K; k++)
+                out << dist(D[j], C[k]) * r << " ";
+            out << "\n";
+        }
+
+        out.close();
+    }
+}
+
+int main() {
+
+    std::mt19937 rng(1389);
+
+    std::vector<std::vector<int>> small = {
+        {4,8,16}, {4,8,20}, {4,10,20}, {6,12,24}, {6,12,30},
+        {6,15,30}, {8,16,32}, {8,16,40}, {8,20,40}, {10,20,40},
+        {10,20,50}, {10,25,50}, {12,24,48}, {12,24,60}, {12,30,60},
+        {14,28,56}, {14,28,70}, {16,32,64}, {16,32,80}, {18,36,72}
+    };
+
+    std::vector<std::vector<int>> medium = {
+        {20,40,80}, {20,40,100}, {20,50,100}, {25,50,100}, {25,50,125},
+        {25,60,120}, {30,60,120}, {30,60,150}, {30,75,150}, {35,70,140},
+        {35,70,175}, {40,80,160}, {40,80,200}, {45,90,180}, {45,90,225},
+        {50,100,200}, {50,100,250}, {55,110,220}, {55,110,275}, {60,120,240}
+    };
+
+    std::vector<std::vector<int>> large = {
+        {70,140,280}, {70,140,350}, {80,160,320}, {80,160,400}, {90,180,360},
+        {90,180,450}, {100,200,400}, {100,200,500}, {110,220,440}, {110,220,550},
+        {120,240,480}, {120,240,600}, {130,260,520}, {130,260,650}, {140,280,560},
+        {140,280,700}, {150,300,600}, {150,300,750}, {160,320,640}, {160,320,800}
+    };
+
+    std::vector<std::vector<int>> tiny = {
+        {3, 5, 10}, {4, 6, 12}, {5, 8, 15}
+    };  
+    std::vector<std::vector<int>> baseline = {
+        {10, 20, 40}, {15, 25, 50}, {20, 30, 60}, {25, 40, 80}
+    };
+
+    
+    generate_group("tiny", tiny, rng);
+    generate_group("baseline", baseline, rng);
+    generate_group("small",  small,  rng);
+    generate_group("medium", medium, rng);
+    generate_group("large",  large,  rng);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{CPLEX implementacija}
+Model je implementiran u C++ korišćenjem IBM ILOG CPLEX Concert Technology.
+Vreme izvršavanja je ograničeno na 2h (7200s), a broj niti na 1 radi konzistentnosti.
+
+\subsection*{Kod rešenja (CPLEX C++)}
+\begin{lstlisting}[language=C++]
+#include <fstream>
+#include <ilcplex/ilocplex.h>
+#include <iostream>
+#include <iomanip>
+
+ILOSTLBEGIN
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Usage: ./solve_tsfc instance.txt\n";
+        return 1;
+    }
+
+    std::ifstream in(argv[1]);
+    if (!in) {
+        std::cerr << "Cannot open file.\n";
+        return 1;
+    }
+
+    IloEnv env;
+
+    IloInt I, J, K;
+    in >> I >> J >> K;
+
+    IloNumArray s(env, I);
+    IloNumArray d(env, K);
+
+    for (IloInt i = 0; i < I; i++) in >> s[i];
+    for (IloInt k = 0; k < K; k++) in >> d[k];
+
+    IloArray<IloNumArray> b(env, I);
+    IloArray<IloNumArray> f(env, I);
+    IloArray<IloNumArray> c(env, J);
+    IloArray<IloNumArray> g(env, J);
+
+    for (IloInt i = 0; i < I; i++) {
+        b[i] = IloNumArray(env, J);
+        f[i] = IloNumArray(env, J);
+    }
+
+    for (IloInt j = 0; j < J; j++) {
+        c[j] = IloNumArray(env, K);
+        g[j] = IloNumArray(env, K);
+    }
+
+    for (IloInt i = 0; i < I; i++)
+        for (IloInt j = 0; j < J; j++) in >> b[i][j];
+
+    for (IloInt i = 0; i < I; i++)
+        for (IloInt j = 0; j < J; j++) in >> f[i][j];
+
+    for (IloInt j = 0; j < J; j++)
+        for (IloInt k = 0; k < K; k++) in >> c[j][k];
+
+    for (IloInt j = 0; j < J; j++)
+        for (IloInt k = 0; k < K; k++) in >> g[j][k];
+
+    in.close();
+
+    try {
+        IloModel model(env);
+
+        IloNumVarArray x(env, I * J, 0.0, IloInfinity, ILOFLOAT);
+        IloBoolVarArray z(env, I * J);
+        IloNumVarArray y(env, J * K, 0.0, IloInfinity, ILOFLOAT);
+        IloBoolVarArray w(env, J * K);
+
+        auto idx_x = [J](IloInt i, IloInt j) { return i * J + j; };
+        auto idx_y = [K](IloInt j, IloInt k) { return j * K + k; };
+
+        IloExpr obj(env);
+        for (IloInt i = 0; i < I; i++)
+            for (IloInt j = 0; j < J; j++)
+                obj += b[i][j] * x[idx_x(i,j)] + f[i][j] * z[idx_x(i,j)];
+
+        for (IloInt j = 0; j < J; j++)
+            for (IloInt k = 0; k < K; k++)
+                obj += c[j][k] * y[idx_y(j,k)] + g[j][k] * w[idx_y(j,k)];
+
+        model.add(IloMinimize(env, obj));
+        obj.end();
+
+        for (IloInt i = 0; i < I; i++) {
+            IloExpr expr(env);
+            for (IloInt j = 0; j < J; j++)
+                expr += x[idx_x(i,j)];
+            model.add(expr - s[i] <= 0);
+            expr.end();
+        }
+
+        for (IloInt k = 0; k < K; k++) {
+            IloExpr expr(env);
+            for (IloInt j = 0; j < J; j++)
+                expr += y[idx_y(j,k)];
+            model.add(expr - d[k] == 0);
+            expr.end();
+        }
+
+        for (IloInt j = 0; j < J; j++) {
+            IloExpr expr(env);
+            for (IloInt i = 0; i < I; i++)
+                expr += x[idx_x(i,j)];
+            for (IloInt k = 0; k < K; k++)
+                expr -= y[idx_y(j,k)];
+            model.add(expr == 0);
+            expr.end();
+        }
+
+        for (IloInt i = 0; i < I; i++)
+            for (IloInt j = 0; j < J; j++)
+                model.add(x[idx_x(i,j)] - s[i] * z[idx_x(i,j)] <= 0);
+
+        for (IloInt j = 0; j < J; j++)
+            for (IloInt k = 0; k < K; k++)
+                model.add(y[idx_y(j,k)] - d[k] * w[idx_y(j,k)] <= 0);
+
+        IloCplex cplex(model);
+        cplex.setParam(IloCplex::Param::TimeLimit, 7200);
+        cplex.setParam(IloCplex::Param::Threads, 1);
+        cplex.setOut(env.getNullStream());
+
+        if (cplex.solve() && cplex.isPrimalFeasible()) {
+            std::cout << std::fixed << std::setprecision(2);
+            std::cout << argv[1] << " "
+                      << ((cplex.getStatus() == IloAlgorithm::Optimal) ? "OPTIMAL" : "FEASIBLE") << " "
+                      << cplex.getObjValue() << " "
+                      << cplex.getTime() << " "
+                      << cplex.getNiterations() << " "
+                      << cplex.getNnodes() << "\n";
+        }
+
+    } catch (IloException &e) {
+        std::cerr << "CPLEX Exception: " << e << std::endl;
+    }
+
+    env.end();
+    return 0;
+}
+\end{lstlisting}
+
+\section{Rezultati CPLEX-a}
+
+Vreme izvršavanja je ograničeno na 2 sata po instanci.
+U tabelama su prikazani:
+\begin{itemize}
+    \item status (OPTIMAL ili FEASIBLE),
+    \item vrednost ciljne funkcije,
+    \item vreme izvršavanja (s),
+    \item broj iteracija,
+    \item broj čvorova.
+\end{itemize}
+
+\subsection{Male instance (small)}
+\begin{longtable}{l l r r r r}
+\toprule
+\textbf{Instanca} & \textbf{Status} & \textbf{Obj} & \textbf{Vreme (s)} & \textbf{Iteracije} & \textbf{Čvorovi} \\
+\midrule
+\endhead
+
+small\_1  & OPTIMAL  & 150568.00 & 1.30   & 494      & 13 \\
+small\_2  & OPTIMAL  & 156022.00 & 1.51   & 969      & 48 \\
+small\_3  & OPTIMAL  & 161224.00 & 1.92   & 745      & 60 \\
+small\_4  & OPTIMAL  & 186537.00 & 1.90   & 467      & 11 \\
+small\_5  & OPTIMAL  & 213785.00 & 2.06   & 754      & 18 \\
+small\_6  & OPTIMAL  & 188954.00 & 7.15   & 9348     & 583 \\
+small\_7  & OPTIMAL  & 231984.00 & 17.97  & 22618    & 1308 \\
+small\_8  & OPTIMAL  & 202467.00 & 11.79  & 8786     & 367 \\
+small\_9  & OPTIMAL  & 210740.00 & 25.79  & 28303    & 1551 \\
+small\_10 & OPTIMAL  & 258236.00 & 7.38   & 124646   & 5628 \\
+small\_11 & OPTIMAL  & 286991.00 & 84.08  & 1168471  & 37922 \\
+small\_12 & FEASIBLE & 284643.00 & 1818.90& 5118195  & 119052 \\
+small\_13 & OPTIMAL  & 278044.00 & 43.03  & 100035   & 4193 \\
+small\_14 & OPTIMAL  & 284648.00 & 2509.23& 7374762  & 207598 \\
+small\_15 & OPTIMAL  & 315417.00 & 1585.38& 3325528  & 71013 \\
+small\_16 & FEASIBLE & 349820.00 & 3479.76& 6251954  & 101284 \\
+small\_17 & FEASIBLE & 368942.00 & 2606.42& 5470859  & 128331 \\
+small\_18 & FEASIBLE & 349036.00 & 4359.04& 8837101  & 171084 \\
+small\_19 & FEASIBLE & 351345.00 & 4018.04& 7789292  & 142852 \\
+small\_20 & FEASIBLE & 400600.00 & 3203.13& 5178550  & 110993 \\
+\bottomrule
+\end{longtable}
+
+\subsection{Srednje instance (medium)}
+U nastavku su prikazane instance za koje su rezultati dostupni:
+
+\begin{center}
+\begin{tabular}{l l r r r r}
+\toprule
+\textbf{Instanca} & \textbf{Status} & \textbf{Obj} & \textbf{Vreme (s)} & \textbf{Iteracije} & \textbf{Čvorovi} \\
+\midrule
+medium\_11 & FEASIBLE & 551427.00 & 4242.68 & 8148431 & 228474 \\
+medium\_12 & FEASIBLE & 478570.00 & 7194.29 & 9805905 & 250345 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Baseline instance}
+U eksperimentu su testirane i baseline instance:
+
+\begin{center}
+\begin{tabular}{l l r r r r}
+\toprule
+\textbf{Instanca} & \textbf{Status} & \textbf{Obj} & \textbf{Vreme (s)} & \textbf{Iteracije} & \textbf{Čvorovi} \\
+\midrule
+baseline\_1 & OPTIMAL  & 223136.00 & 1.70    & 14281     & 404 \\
+baseline\_2 & OPTIMAL  & 317975.00 & 1190.98 & 11745067  & 265058 \\
+baseline\_3 & OPTIMAL  & 322093.00 & 3695.07 & 21479433  & 385399 \\
+baseline\_4 & FEASIBLE & 399062.00 & 7189.11 & 1280093   & 31964 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Komentar i analiza rezultata}
+Na osnovu dobijenih rezultata može se uočiti sledeće:
+\begin{itemize}
+    \item Za manje instance CPLEX u velikom broju slučajeva pronalazi optimalno rešenje relativno brzo, ali kako dimenzije rastu, broj čvorova i iteracija značajno raste.
+    
+    \item Kod nekih instanci (npr. \texttt{small\_12}, \texttt{small\_16}-\texttt{small\_20}) CPLEX nije uspeo da dokaže optimalnost u okviru vremenskog limita, ali je pronašao dopustivo rešenje (status FEASIBLE).
+    
+    \item Za srednje instance prikazane u tabeli (\texttt{medium\_11 i medium\_12}), CPLEX je dostigao vremenski limit i dao samo dopustiva rešenja, što ukazuje da problem postaje veoma težak već u ovoj dimenziji.
+    
+    \item Vreme izvršavanja je u korelaciji sa rastom dimenzija i kompleksnošću MILP modela zbog binarnih promenljivih $z_{ij}$ i $w_{jk}$, koje uvode kombinatornu eksploziju u pretrazi.
+
+\end{itemize}
+
+\begin{tcolorbox}[myrednote,title=Napomena o rezultatima većih instanci]
+U trenutnoj verziji rada nisu prikazani rezultati za sve instance iz skupa \texttt{medium}, kao nijedna iz skupa \texttt{large}. 
+Tokom izvršavanja eksperimenta pojavili su se tehnički problemi prilikom rešavanja pojedinih instanci: na više različitih mašina dolazilo je do prekida rada računara, dok je za instancu \texttt{medium\_10} program u više pokušaja neočekivano prekidao izvršavanje bez ispisivanja rezultata. 
+Zbog navedenog, u radu su trenutno prikazani samo rezultati za instance za koje je izvršavanje uspešno završeno. 
+Planirano je da se preostali eksperimenti ponove na drugoj konfiguraciji, nakon čega će rezultati biti naknadno dopunjeni.
+\end{tcolorbox}
+
+\begin{tcolorbox}[myrednote,title=Napomena o rezultatima i pribavljanju referentnih instanci]
+U okviru ovog rada nije bilo moguće izvršiti poređenje dobijenih rezultata sa referentnim vrednostima iz literature, jer originalne instance korišćene u radu autora nisu bile dostupne za preuzimanje. Iako je u literaturi naveden link ka instancama, nakon višenedeljnih pokušaja pristupa i slanja upita, kao i direktnog kontaktiranja istraživača koji su sproveli istraživanje, instance nisu pribavljene. 
+\end{tcolorbox}
+
+
+\section{Link za kod, izvrsnu verziju i korišćene instance}
+Kod programa i izvršna verzija (CPLEX) dostupni su na sledećem linku:
+
+\begin{center}
+\url{https://github.com/MSZ2/TS-FCTP-Matheuristics-project/tree/CPLEX}
+\end{center}
+
+\begin{thebibliography}{9}
+
+\bibitem{tsfctp}
+H.~I.~Calvete, C.~Gal\'e, J.~A.~Iranzo, P.~Toth,
+\textit{A matheuristic for the two-stage fixed-charge transportation problem}.
+
+\end{thebibliography}
+
+
+\end{document}

@@ -1,0 +1,42 @@
+================================================================================
+IZVEŠTAJ O IZVRŠAVANJU GRASP METAHEURISTIKE
+================================================================================
+
+--- INSTANCA ---
+Putanja: generated_instances/small_15.txt
+Dimenzije: I=12, J=30, K=60
+Ukupna ponuda/potražnja: 960
+
+--- OPTIMALNO REŠENJE (iz literature) ---
+Optimalno rešenje: 315417.00
+Vreme za optimalno: 1585.38s
+
+Najbolje MA rešenje: 570351
+
+--- PLATFORMA ---
+MA izvršavan: AMD Ryzen 5, 16GB RAM
+
+--- REZULTATI (10 izvršavanja) ---
+
+Run    Best Cost    Gap (%)    t (s)      ttot (s)   Iter    
+----------------------------------------------------------------------
+1      620363       96.68      42.39      80.64      200     
+2      591477       87.52      63.11      80.70      200     
+3      603475       91.33      40.63      79.88      200     
+4      588060       86.44      1.96       81.29      200     
+5      594363       88.44      34.62      80.45      200     
+6      570351       80.82      43.73      80.37      200     
+7      574110       82.02      66.49      80.47      200     
+8      604447       91.63      13.29      79.39      200     
+9      608823       93.02      52.36      79.83      200     
+10     592699       87.91      66.89      79.32      200     
+----------------------------------------------------------------------
+
+--- SREDNJE VREDNOSTI ---
+srednje početno vreme (t)           = 42.55 s
+srednje ukupno vreme (ttot)         = 80.23 s
+srednje odstupanje (agap)           = 88.58 %
+standardna devijacija (σ)           = 4.60 %
+srednji broj iteracija (iter)      = 200.0
+
+================================================================================
