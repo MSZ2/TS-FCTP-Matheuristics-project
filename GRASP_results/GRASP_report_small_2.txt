@@ -1,42 +1,42 @@
 ================================================================================
-IZVEŠTAJ O IZVRŠAVANJU GRASP METAHEURISTIKE
+GRASP METAHEURISTIC REPORT
 ================================================================================
 
---- INSTANCA ---
-Putanja: generated_instances/small_2.txt
-Dimenzije: I=4, J=8, K=20
-Ukupna ponuda/potražnja: 320
+--- INSTANCE ---
+Path: generated_instances/small_2.txt
+Dimensions: I=4, J=8, K=20
+Total supply/demand: 320
 
---- OPTIMALNO REŠENJE (iz literature) ---
-Optimalno rešenje: 156022.00
-Vreme za optimalno: 1.51s
+--- OPTIMAL SOLUTION (from literature) ---
+Optimal value: 156022.00
+Time to optimal: 1.51s
 
-Najbolje MA rešenje: 188202
+Best MA solution: 159710
 
---- PLATFORMA ---
-MA izvršavan: AMD Ryzen 5, 16GB RAM
+--- PLATFORM ---
+MA executed on: AMD Ryzen 5, 16GB RAM
 
---- REZULTATI (10 izvršavanja) ---
+--- RESULTS (10 runs) ---
 
 Run    Best Cost    Gap (%)    t (s)      ttot (s)   Iter    
 ----------------------------------------------------------------------
-1      191037       22.44      2.28       6.12       200     
-2      190733       22.25      1.66       5.97       200     
-3      195973       25.61      5.14       6.23       200     
-4      192396       23.31      3.03       6.48       200     
-5      188685       20.93      2.30       6.05       200     
-6      194730       24.81      1.92       6.30       200     
-7      188609       20.89      4.41       6.44       200     
-8      188202       20.63      0.01       5.89       200     
-9      197000       26.26      3.50       6.02       200     
-10     195782       25.48      5.48       6.54       200     
+1      161191       3.31       4.56       9.41       1000    
+2      160684       2.99       2.43       9.34       1000    
+3      161051       3.22       5.87       10.22      1000    
+4      161051       3.22       6.37       10.28      1000    
+5      160771       3.04       7.60       10.20      1000    
+6      161787       3.69       3.96       10.23      1000    
+7      160705       3.00       5.02       10.67      1000    
+8      161619       3.59       3.94       10.51      1000    
+9      159710       2.36       2.86       11.13      1000    
+10     160845       3.09       8.58       10.23      1000    
 ----------------------------------------------------------------------
 
---- SREDNJE VREDNOSTI ---
-srednje početno vreme (t)           = 2.97 s
-srednje ukupno vreme (ttot)         = 6.20 s
-srednje odstupanje (agap)           = 23.26 %
-standardna devijacija (σ)           = 2.04 %
-srednji broj iteracija (iter)      = 200.0
+--- AVERAGE VALUES ---
+average time to best (t)        = 5.12 s
+average total time (ttot)       = 10.22 s
+average gap (agap)               = 3.15 %
+standard deviation (sigma)       = 0.35 %
+average iterations (iter)       = 1000.0
 
 ================================================================================
