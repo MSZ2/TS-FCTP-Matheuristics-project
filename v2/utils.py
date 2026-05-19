@@ -189,7 +189,12 @@ class GRASPExperiment:
         print(f"Total time   : {stats['mean_t_total']:.2f} s")
         print(f"Gap (%)      : {stats['mean_gap']:.2f} ± {stats['std_gap']:.2f}")
 
-        rep_name = f"GRASP_report_{os.path.basename(self.instance_path)}"
+        os.makedirs("reports", exist_ok=True)
+
+        rep_name = os.path.join(
+            "reports",
+            f"GRASP_report_{os.path.basename(self.instance_path)}"
+        )
 
         with open(rep_name, "w") as f:
             f.write(f"Instance: {self.instance_path}\n")
