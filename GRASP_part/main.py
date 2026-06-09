@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", type=str, default="single",
                         choices=["single", "multi"])
 
-    parser.add_argument("--iters", type=int, default=300,
+    parser.add_argument("--iters", type=int, default=100,
                         help="iterations per GRASP run")
 
     parser.add_argument("--runs", type=int, default=10,

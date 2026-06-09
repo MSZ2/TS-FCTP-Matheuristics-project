@@ -39,13 +39,13 @@ def read_instance(filename):
 
 def get_results_filename(instance_path: str):
     base = os.path.basename(instance_path)
-
+    prefix = 'CPLEX_part/results/'
     if base.startswith("small_"):
-        return "results_small.txt"
+        return os.path.join(prefix, "results_small.txt")
     if base.startswith("medium_"):
-        return "results_medium.txt"
+        return os.path.join(prefix, "results_medium.txt")
     if base.startswith("large_"):
-        return "results_large.txt"
+        return os.path.join(prefix, "results_large.txt")
 
     return None
 

@@ -1,0 +1,7 @@
+Instance: ../generated_instances/small_6.txt
+Best MA: 201973
+Run 1: 205478 gap=1.74%
+Run 2: 204250 gap=1.13%
+Run 3: 201973 gap=0.00%
+Run 4: 209796 gap=3.87%
+Run 5: 202774 gap=0.40%
