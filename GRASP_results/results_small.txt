@@ -1,0 +1,552 @@
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ for file in ../generated_instances/small*.txt; do
+  python main.py --mode multi --runs 1 --iters 600 "$file"
+done
+I=4, J=8, K=16, supply=320, demand=320
+
+Instance loaded:
+I=4, J=8, K=16
+
+--- Run 1/1 seed=42 ---
+[0] best = 161144
+[1] best = 160749
+[3] best = 160620
+[7] best = 156617
+[11] best = 156159
+[58] best = 154310
+[144] best = 151577
+Best cost: 151577
+Time     : 11.55s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_1.txt
+Optimal (if known): None
+Best MA cost: 151577
+
+--- Averages over 1 runs ---
+Time to best : 11.55 s
+Total time   : 11.55 s
+Gap (%)      : 0.00 ± 0.00
+I=10, J=20, K=40, supply=800, demand=800
+
+Instance loaded:
+I=10, J=20, K=40
+
+--- Run 1/1 seed=42 ---
+[0] best = 303914
+[2] best = 298277
+[3] best = 297287
+[6] best = 294602
+[7] best = 291252
+[12] best = 285704
+[117] shake = 285010
+[159] shake = 282141
+Best cost: 282141
+Time     : 113.27s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_10.txt
+Optimal (if known): None
+Best MA cost: 282141
+
+--- Averages over 1 runs ---
+Time to best : 113.27 s
+Total time   : 113.27 s
+Gap (%)      : 0.00 ± 0.00
+I=10, J=20, K=50, supply=800, demand=800
+
+Instance loaded:
+I=10, J=20, K=50
+
+--- Run 1/1 seed=42 ---
+[0] best = 343872
+[3] best = 336376
+[6] best = 321016
+[27] shake = 318463
+[46] best = 317782
+[67] shake = 316033
+[151] shake = 315195
+[172] shake = 314812
+[277] shake = 313825
+[298] shake = 313557
+[319] shake = 312074
+[340] shake = 311791
+Best cost: 311791
+Time     : 136.27s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_11.txt
+Optimal (if known): None
+Best MA cost: 311791
+
+--- Averages over 1 runs ---
+Time to best : 136.27 s
+Total time   : 136.27 s
+Gap (%)      : 0.00 ± 0.00
+I=10, J=25, K=50, supply=800, demand=800
+
+Instance loaded:
+I=10, J=25, K=50
+
+--- Run 1/1 seed=42 ---
+[0] best = 372412
+[1] best = 331197
+[8] PR = 325886
+[32] best = 322076
+[58] best = 321631
+[61] best = 319830
+[230] best = 317461
+Best cost: 317461
+Time     : 283.95s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_12.txt
+Optimal (if known): None
+Best MA cost: 317461
+
+--- Averages over 1 runs ---
+Time to best : 283.95 s
+Total time   : 283.95 s
+Gap (%)      : 0.00 ± 0.00
+I=12, J=24, K=48, supply=960, demand=960
+
+Instance loaded:
+I=12, J=24, K=48
+
+--- Run 1/1 seed=42 ---
+[0] best = 347587
+[2] best = 339396
+[5] best = 335643
+[13] best = 332134
+[14] best = 320320
+[104] best = 319096
+[251] shake = 318830
+Best cost: 318830
+Time     : 230.13s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_13.txt
+Optimal (if known): None
+Best MA cost: 318830
+
+--- Averages over 1 runs ---
+Time to best : 230.13 s
+Total time   : 230.13 s
+Gap (%)      : 0.00 ± 0.00
+I=12, J=24, K=60, supply=960, demand=960
+
+Instance loaded:
+I=12, J=24, K=60
+
+--- Run 1/1 seed=42 ---
+[0] best = 344448
+[7] best = 338605
+[37] best = 332048
+[163] shake = 329388
+Best cost: 329388
+Time     : 208.11s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_14.txt
+Optimal (if known): None
+Best MA cost: 329388
+
+--- Averages over 1 runs ---
+Time to best : 208.11 s
+Total time   : 208.11 s
+Gap (%)      : 0.00 ± 0.00
+I=12, J=30, K=60, supply=960, demand=960
+
+Instance loaded:
+I=12, J=30, K=60
+
+--- Run 1/1 seed=42 ---
+[0] best = 407117
+[1] best = 377376
+[6] best = 372035
+[7] best = 367619
+[8] PR = 359518
+[16] best = 356559
+[25] best = 351471
+[40] PR = 350551
+[169] best = 350108
+[181] best = 347679
+[266] best = 347316
+[283] best = 343759
+[359] best = 340537
+Best cost: 340537
+Time     : 346.86s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_15.txt
+Optimal (if known): None
+Best MA cost: 340537
+
+--- Averages over 1 runs ---
+Time to best : 346.86 s
+Total time   : 346.86 s
+Gap (%)      : 0.00 ± 0.00
+I=14, J=28, K=56, supply=1120, demand=1120
+
+Instance loaded:
+I=14, J=28, K=56
+
+--- Run 1/1 seed=42 ---
+[0] best = 431594
+[1] best = 393387
+[352] PR = 390153
+Best cost: 390153
+Time     : 333.62s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_16.txt
+Optimal (if known): None
+Best MA cost: 390153
+
+--- Averages over 1 runs ---
+Time to best : 333.62 s
+Total time   : 333.62 s
+Gap (%)      : 0.00 ± 0.00
+I=14, J=28, K=70, supply=1120, demand=1120
+
+Instance loaded:
+I=14, J=28, K=70
+
+--- Run 1/1 seed=42 ---
+[0] best = 459645
+[2] best = 450977
+[3] best = 425204
+[16] PR = 414925
+[152] PR = 410639
+[256] PR = 409707
+Best cost: 409707
+Time     : 428.09s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_17.txt
+Optimal (if known): None
+Best MA cost: 409707
+
+--- Averages over 1 runs ---
+Time to best : 428.09 s
+Total time   : 428.09 s
+Gap (%)      : 0.00 ± 0.00
+I=16, J=32, K=64, supply=1280, demand=1280
+
+Instance loaded:
+I=16, J=32, K=64
+
+--- Run 1/1 seed=42 ---
+[0] best = 426878
+[2] best = 416064
+[3] best = 409572
+[4] best = 405503
+[10] best = 394588
+[52] shake = 393723
+[77] best = 391440
+[91] best = 389940
+[217] shake = 388331
+[322] shake = 387603
+[448] shake = 387199
+[511] shake = 384802
+Best cost: 384802
+Time     : 389.64s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_18.txt
+Optimal (if known): None
+Best MA cost: 384802
+
+--- Averages over 1 runs ---
+Time to best : 389.64 s
+Total time   : 389.64 s
+Gap (%)      : 0.00 ± 0.00
+I=16, J=32, K=80, supply=1280, demand=1280
+
+Instance loaded:
+I=16, J=32, K=80
+
+--- Run 1/1 seed=42 ---
+[0] best = 433879
+[1] best = 420107
+[8] PR = 416077
+[16] PR = 412894
+[40] PR = 401987
+[48] PR = 401398
+[72] PR = 399667
+[88] PR = 399474
+[480] PR = 398298
+Best cost: 398298
+Time     : 466.97s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_19.txt
+Optimal (if known): None
+Best MA cost: 398298
+
+--- Averages over 1 runs ---
+Time to best : 466.97 s
+Total time   : 466.97 s
+Gap (%)      : 0.00 ± 0.00
+I=4, J=8, K=20, supply=320, demand=320
+
+Instance loaded:
+I=4, J=8, K=20
+
+--- Run 1/1 seed=42 ---
+[0] best = 175039
+[2] best = 172335
+[4] best = 168293
+[44] best = 166793
+[137] best = 165933
+Best cost: 165933
+Time     : 15.34s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_2.txt
+Optimal (if known): None
+Best MA cost: 165933
+
+--- Averages over 1 runs ---
+Time to best : 15.34 s
+Total time   : 15.34 s
+Gap (%)      : 0.00 ± 0.00
+I=18, J=36, K=72, supply=1440, demand=1440
+
+Instance loaded:
+I=18, J=36, K=72
+
+--- Run 1/1 seed=42 ---
+[0] best = 503839
+[1] best = 501937
+[4] best = 488649
+[12] best = 466084
+[30] best = 455169
+[40] PR = 446857
+Best cost: 446857
+Time     : 470.15s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_20.txt
+Optimal (if known): None
+Best MA cost: 446857
+
+--- Averages over 1 runs ---
+Time to best : 470.15 s
+Total time   : 470.15 s
+Gap (%)      : 0.00 ± 0.00
+I=4, J=10, K=20, supply=320, demand=320
+
+Instance loaded:
+I=4, J=10, K=20
+
+--- Run 1/1 seed=42 ---
+[0] best = 186340
+[1] best = 182668
+[2] best = 174887
+[6] best = 173445
+[8] best = 173260
+[23] best = 173092
+[28] best = 172754
+[44] best = 172337
+[168] best = 171797
+[442] best = 169653
+Best cost: 169653
+Time     : 29.16s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_3.txt
+Optimal (if known): None
+Best MA cost: 169653
+
+--- Averages over 1 runs ---
+Time to best : 29.16 s
+Total time   : 29.16 s
+Gap (%)      : 0.00 ± 0.00
+I=6, J=12, K=24, supply=480, demand=480
+
+Instance loaded:
+I=6, J=12, K=24
+
+--- Run 1/1 seed=42 ---
+[0] best = 208310
+[2] best = 204352
+[17] best = 204225
+[18] best = 201743
+[45] best = 199788
+[58] best = 198353
+[370] best = 195722
+Best cost: 195722
+Time     : 32.51s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_4.txt
+Optimal (if known): None
+Best MA cost: 195722
+
+--- Averages over 1 runs ---
+Time to best : 32.51 s
+Total time   : 32.51 s
+Gap (%)      : 0.00 ± 0.00
+I=6, J=12, K=30, supply=480, demand=480
+
+Instance loaded:
+I=6, J=12, K=30
+
+--- Run 1/1 seed=42 ---
+[0] best = 241489
+[8] best = 239715
+[35] best = 236206
+[224] shake = 236121
+Best cost: 236121
+Time     : 54.32s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_5.txt
+Optimal (if known): None
+Best MA cost: 236121
+
+--- Averages over 1 runs ---
+Time to best : 54.32 s
+Total time   : 54.32 s
+Gap (%)      : 0.00 ± 0.00
+I=6, J=15, K=30, supply=480, demand=480
+
+Instance loaded:
+I=6, J=15, K=30
+
+--- Run 1/1 seed=42 ---
+[0] best = 218861
+[3] best = 215247
+[6] best = 213075
+[85] best = 212653
+[88] best = 212581
+[164] best = 210286
+[206] shake = 209282
+Best cost: 209282
+Time     : 66.04s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_6.txt
+Optimal (if known): None
+Best MA cost: 209282
+
+--- Averages over 1 runs ---
+Time to best : 66.04 s
+Total time   : 66.04 s
+Gap (%)      : 0.00 ± 0.00
+I=8, J=16, K=32, supply=640, demand=640
+
+Instance loaded:
+I=8, J=16, K=32
+
+--- Run 1/1 seed=42 ---
+[0] best = 261156
+[1] best = 256509
+[2] best = 254909
+[13] best = 249928
+[553] best = 249724
+Best cost: 249724
+Time     : 59.74s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_7.txt
+Optimal (if known): None
+Best MA cost: 249724
+
+--- Averages over 1 runs ---
+Time to best : 59.74 s
+Total time   : 59.74 s
+Gap (%)      : 0.00 ± 0.00
+I=8, J=16, K=40, supply=640, demand=640
+
+Instance loaded:
+I=8, J=16, K=40
+
+--- Run 1/1 seed=42 ---
+[0] best = 239320
+[3] best = 234328
+[5] best = 229148
+[14] best = 228244
+[34] best = 225384
+[79] best = 225083
+[121] shake = 224450
+[252] best = 222911
+[407] best = 222261
+Best cost: 222261
+Time     : 83.27s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_8.txt
+Optimal (if known): None
+Best MA cost: 222261
+
+--- Averages over 1 runs ---
+Time to best : 83.27 s
+Total time   : 83.27 s
+Gap (%)      : 0.00 ± 0.00
+I=8, J=20, K=40, supply=640, demand=640
+
+Instance loaded:
+I=8, J=20, K=40
+
+--- Run 1/1 seed=42 ---
+[0] best = 234562
+[8] best = 232691
+[8] PR = 231972
+[19] best = 230228
+[39] best = 225173
+[136] best = 224926
+[241] shake = 224842
+Best cost: 224842
+Time     : 106.44s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/small_9.txt
+Optimal (if known): None
+Best MA cost: 224842
+
+--- Averages over 1 runs ---
+Time to best : 106.44 s
+Total time   : 106.44 s
+Gap (%)      : 0.00 ± 0.00
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$

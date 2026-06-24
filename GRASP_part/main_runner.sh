@@ -5,7 +5,7 @@
 INSTANCE_DIR="../generated_instances"
 SCRIPT="main.py"
 
-MODE="single"
+MODE="multi"
 ITERS=100
 RUNS=1
 

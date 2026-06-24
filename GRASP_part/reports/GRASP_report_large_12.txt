@@ -1,0 +1,3 @@
+Instance: ../generated_instances/large_12.txt
+Best MA: 1426385
+Run 1: 1426385 gap=0.00%
