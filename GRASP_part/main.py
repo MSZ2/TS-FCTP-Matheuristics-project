@@ -2,7 +2,7 @@ import argparse
 import random
 
 from utils import GRASPExperiment, read_instance
-from GRASP import GRASP   # your solver
+from GRASP_HARD import GRASP   # your solver
 
 
 # ============================================================
