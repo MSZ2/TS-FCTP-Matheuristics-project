@@ -5,6 +5,40 @@ import os
 import multiprocessing as mp
 
 # ============================================================
+# Objective-function call counter (eval_i in the MA report)
+# ============================================================
+#
+# Per-process counter: in serial mode there is only one process, so
+# reading it at the end of run() gives the true total. In parallel
+# mode each worker process has its own independent counter; workers
+# report their own count back per task (see _construct_and_improve)
+# and the main process folds it into its own running total, which
+# also picks up the compute_cost() calls made directly in the main
+# process (path relinking, shake).
+
+_EVAL_COUNT = 0
+
+
+def _reset_eval_count():
+    global _EVAL_COUNT
+    _EVAL_COUNT = 0
+
+
+def _get_eval_count():
+    return _EVAL_COUNT
+
+
+def _add_eval_count(n):
+    global _EVAL_COUNT
+    _EVAL_COUNT += n
+
+
+def _bump_eval_count():
+    global _EVAL_COUNT
+    _EVAL_COUNT += 1
+
+
+# ============================================================
 # Solution representation
 # ============================================================
 
@@ -25,6 +59,7 @@ class Solution:
         return s
 
     def compute_cost(self):
+        _bump_eval_count()
         d = self.data
         self.cost = int(np.sum(self.x * d.b) +
                         np.sum(self.y * d.c) +
@@ -421,10 +456,14 @@ def _init_worker(data):
 
 
 def _construct_and_improve(alpha):
+    # Reset this worker's own counter so each task reports only the
+    # evals it personally performed (Pool reuses worker processes
+    # across many tasks, so the counter would otherwise keep growing).
+    _reset_eval_count()
     sol = Construction(_WORKER_DATA, alpha).build()
     sol = LocalSearch(_WORKER_DATA).improve(sol)
     sol.compute_cost()
-    return sol.x, sol.y, sol.cost, sol.open_dc
+    return sol.x, sol.y, sol.cost, sol.open_dc, _get_eval_count()
 
 
 # ============================================================
@@ -440,6 +479,12 @@ class GRASP:
         self.n_workers = n_workers or max(1, mp.cpu_count() - 1)
 
     def run(self):
+        """
+        Returns (best, best_cost, total_time, time_to_best, eval_count):
+          - total_time    : ttot_i, wall-clock time for this whole run
+          - time_to_best  : t_i, wall-clock time when `best` was first found
+          - eval_count    : eval_i, number of Solution.compute_cost() calls
+        """
         if self.n_workers <= 1:
             return self._run_serial()
         return self._run_parallel()
@@ -455,6 +500,8 @@ class GRASP:
         best_cost = float('inf')
         last_improvement = 0
         start = time.time()
+        time_to_best = 0.0
+        _reset_eval_count()
 
         for it in range(self.iters):
             if it - last_improvement > 15:
@@ -471,6 +518,7 @@ class GRASP:
                 best = sol.copy()
                 best_cost = sol.cost
                 last_improvement = it
+                time_to_best = time.time() - start
                 print(f'[{it}] best = {best_cost}')
 
             if it % 8 == 0 and len(elite.pool) >= 2:
@@ -479,13 +527,15 @@ class GRASP:
                     best = cand.copy()
                     best_cost = cand.cost
                     last_improvement = it
+                    time_to_best = time.time() - start
                     print(f'[{it}] PR = {best_cost}')
 
             if it - last_improvement > 20 and best:
-                best, best_cost, last_improvement = self._shake(
-                    best, best_cost, it, ls)
+                best, best_cost, last_improvement, time_to_best = self._shake(
+                    best, best_cost, it, ls, start, time_to_best)
 
-        return best, best_cost, time.time() - start
+        total_time = time.time() - start
+        return best, best_cost, total_time, time_to_best, _get_eval_count()
 
     # ----------------------------------------------------------
     # Parallel: build+improve a batch of iterations concurrently,
@@ -500,6 +550,8 @@ class GRASP:
         best_cost = float('inf')
         last_improvement = 0
         start = time.time()
+        time_to_best = 0.0
+        _reset_eval_count()
 
         n_workers = min(self.n_workers, self.iters)
         pool = mp.Pool(n_workers, initializer=_init_worker, initargs=(self.data,))
@@ -516,7 +568,8 @@ class GRASP:
 
                 results = pool.map(_construct_and_improve, alphas)
 
-                for x, y, cost, open_dc in results:
+                for x, y, cost, open_dc, evals in results:
+                    _add_eval_count(evals)
                     sol = Solution(self.data)
                     sol.x, sol.y, sol.cost, sol.open_dc = x, y, cost, open_dc
                     elite.add(sol)
@@ -525,6 +578,7 @@ class GRASP:
                         best = sol.copy()
                         best_cost = sol.cost
                         last_improvement = it
+                        time_to_best = time.time() - start
                         print(f'[{it}] best = {best_cost}')
 
                     # path relinking every 8 iterations
@@ -534,24 +588,26 @@ class GRASP:
                             best = cand.copy()
                             best_cost = cand.cost
                             last_improvement = it
+                            time_to_best = time.time() - start
                             print(f'[{it}] PR = {best_cost}')
 
                     # shake (ruin-and-recreate) when stuck for too long
                     if it - last_improvement > 20 and best:
-                        best, best_cost, last_improvement = self._shake(
-                            best, best_cost, it, ls)
+                        best, best_cost, last_improvement, time_to_best = self._shake(
+                            best, best_cost, it, ls, start, time_to_best)
 
                     it += 1
         finally:
             pool.close()
             pool.join()
 
-        return best, best_cost, time.time() - start
+        total_time = time.time() - start
+        return best, best_cost, total_time, time_to_best, _get_eval_count()
 
     # ----------------------------------------------------------
     # Ruin-and-recreate shake, shared by serial and parallel runs.
     # ----------------------------------------------------------
-    def _shake(self, best, best_cost, it, ls):
+    def _shake(self, best, best_cost, it, ls, start, time_to_best):
         d = self.data
         last_improvement = it
         if len(best.open_dc) > 1:
@@ -591,5 +647,6 @@ class GRASP:
                 if trial.is_valid() and trial.cost < best_cost:
                     best = trial.copy()
                     best_cost = trial.cost
+                    time_to_best = time.time() - start
                     print(f'[{it}] shake = {best_cost}')
-        return best, best_cost, last_improvement
+        return best, best_cost, last_improvement, time_to_best

@@ -1,0 +1,455 @@
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi 100 ../generated_instances/large_1.txt
+I=70, J=140, K=280, supply=5600, demand=5600
+
+Instance loaded:
+I=70, J=140, K=280
+
+--- Run 1/1 seed=42 ---
+[0] best = 1179098
+[1] best = 1087523
+[2] best = 1061028
+[3] best = 1031940
+[5] best = 1013744
+[16] PR = 990638
+[56] PR = 978258
+Best cost: 978258
+Time     : 1469.71s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_1.txt
+Optimal (if known): None
+Best MA cost: 978258
+
+--- Averages over 1 runs ---
+Time to best : 1469.71 s
+Total time   : 1469.71 s
+Gap (%)      : 0.00 ± 0.00
+
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --runs 1 --iters 100 ../generated_instances/large_2.txt
+I=70, J=140, K=350, supply=5600, demand=5600
+
+Instance loaded:
+I=70, J=140, K=350
+
+--- Run 1/1 seed=42 ---
+[0] best = 1215795
+[2] best = 1166894
+[5] best = 1159910
+[6] best = 1158940
+[10] best = 1125764
+[13] best = 1112279
+Best cost: 1112279
+Time     : 2366.55s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_2.txt
+Optimal (if known): None
+Best MA cost: 1112279
+
+--- Averages over 1 runs ---
+Time to best : 2366.55 s
+Total time   : 2366.55 s
+Gap (%)      : 0.00 ± 0.00
+
+
+I=80, J=160, K=320, supply=6400, demand=6400
+
+Instance loaded:
+I=80, J=160, K=320
+
+--- Run 1/1 seed=42 ---
+[0] best = 1389289
+[1] best = 1362363
+[2] best = 1251852
+[6] best = 1236291
+[8] best = 1234613
+[8] PR = 1223198
+[13] best = 1218440
+[15] best = 1188280
+Best cost: 1188280
+Time     : 3447.58s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_3.txt
+Optimal (if known): None
+Best MA cost: 1188280
+
+--- Averages over 1 runs ---
+Time to best : 3447.58 s
+Total time   : 3447.58 s
+Gap (%)      : 0.00 ± 0.00
+
+s 100 ../generated_instances/large_4.txt
+I=80, J=160, K=400, supply=6400, demand=6400
+
+Instance loaded:
+I=80, J=160, K=400
+
+--- Run 1/1 seed=42 ---
+[0] best = 1289876
+[1] best = 1230549
+[2] best = 1212362
+[4] best = 1161939
+[6] best = 1113197
+[8] PR = 1077850
+[32] PR = 1052892
+Best cost: 1052892
+Time     : 8629.20s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_4.txt
+Optimal (if known): None
+Best MA cost: 1052892
+
+--- Averages over 1 runs ---
+Time to best : 8629.20 s
+Total time   : 8629.20 s
+Gap (%)      : 0.00 ± 0.00
+
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --runs 1 --iters 100 ../generated_instances/large_5.txt
+I=90, J=180, K=360, supply=7200, demand=7200
+
+Instance loaded:
+I=90, J=180, K=360
+
+--- Run 1/1 seed=42 ---
+[0] best = 1250522
+[1] best = 1106339
+[3] best = 1080787
+[8] PR = 1058403
+[24] PR = 1043954
+[48] PR = 1021781
+Best cost: 1021781
+Time     : 5103.34s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_5.txt
+Optimal (if known): None
+Best MA cost: 1021781
+
+--- Averages over 1 runs ---
+Time to best : 5103.34 s
+Total time   : 5103.34 s
+Gap (%)      : 0.00 ± 0.00
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --runs 1 --iters 100 ../generated_instances/large_6.txt
+I=90, J=180, K=450, supply=7200, demand=7200
+
+Instance loaded:
+I=90, J=180, K=450
+
+--- Run 1/1 seed=42 ---
+[0] best = 1426032
+[1] best = 1310302
+[5] best = 1275838
+[64] PR = 1259996
+[88] PR = 1258051
+Best cost: 1258051
+Time     : 4523.82s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_6.txt
+Optimal (if known): None
+Best MA cost: 1258051
+
+--- Averages over 1 runs ---
+Time to best : 4523.82 s
+Total time   : 4523.82 s
+Gap (%)      : 0.00 ± 0.00
+
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --run10:03:59 [2/2$
+0 ../generated_instances/large_7.txt
+I=100, J=200, K=400, supply=8000, demand=8000
+
+Instance loaded:
+I=100, J=200, K=400
+
+--- Run 1/1 seed=42 ---
+[0] best = 1755682
+[1] best = 1754763
+[2] best = 1555029
+[6] best = 1551960
+[8] PR = 1525822
+[16] PR = 1498262
+[47] shake = 1478852
+Best cost: 1478852
+Time     : 5918.25s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_7.txt
+Optimal (if known): None
+Best MA cost: 1478852
+
+--- Averages over 1 runs ---
+Time to best : 5918.25 s
+Total time   : 5918.25 s
+Gap (%)      : 0.00 ± 0.00
+
+venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --run14:12:50 [1/1$
+0 ../generated_instances/large_8.txt
+I=100, J=200, K=500, supply=8000, demand=8000
+
+Instance loaded:
+I=100, J=200, K=500
+
+--- Run 1/1 seed=42 ---
+[0] best = 1374898
+[8] PR = 1309365
+[16] PR = 1275761
+[47] shake = 1260273
+[48] PR = 1258579
+[96] PR = 1258406
+Best cost: 1258406
+Time     : 9116.91s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_8.txt
+Optimal (if known): None
+Best MA cost: 1258406
+
+--- Averages over 1 runs ---
+Time to best : 9116.91 s
+Total time   : 9116.91 s
+Gap (%)      : 0.00 ± 0.00
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --runs 1 --iters 100 ../generated_instances/large_9.txt
+I=110, J=220, K=440, supply=8800, demand=8800
+
+Instance loaded:
+I=110, J=220, K=440
+
+--- Run 1/1 seed=42 ---
+^[[A^[[A[0] best = 1284940
+[8] PR = 1242905
+[56] PR = 1229776
+        Best cost: 1229776
+Time     : 6705.58s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_9.txt
+Optimal (if known): None
+Best MA cost: 1229776
+
+--- Averages over 1 runs ---
+Time to best : 6705.58 s
+Total time   : 6705.58 s
+Gap (%)      : 0.00 ± 0.00
+
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ for f in $(seq 3 9); do     python main.py --mode multi --runs 1 --iters 50 ../generated_instances/large_1${f}.txt; done
+I=130, J=260, K=520, supply=10400, demand=10400
+
+Instance loaded:
+I=130, J=260, K=520
+
+--- Run 1/1 seed=42 ---
+[0] best = 1575569
+[5] best = 1373674
+[16] PR = 1322875
+Best cost: 1322875
+Time     : 7192.80s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_13.txt
+Optimal (if known): None
+Best MA cost: 1322875
+
+--- Averages over 1 runs ---
+Time to best : 7192.80 s
+Total time   : 7192.80 s
+Gap (%)      : 0.00 ± 0.00
+I=130, J=260, K=650, supply=10400, demand=10400
+
+Instance loaded:
+I=130, J=260, K=650
+
+--- Run 1/1 seed=42 ---
+[0] best = 1609648
+[3] best = 1573458
+[4] best = 1571603
+[8] PR = 1507941
+[15] best = 1505752
+[16] PR = 1421293
+Best cost: 1421293
+Time     : 17229.43s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_14.txt
+Optimal (if known): None
+Best MA cost: 1421293
+
+--- Averages over 1 runs ---
+Time to best : 17229.43 s
+Total time   : 17229.43 s
+Gap (%)      : 0.00 ± 0.00
+I=140, J=280, K=560, supply=11200, demand=11200
+
+Instance loaded:
+I=140, J=280, K=560
+
+--- Run 1/1 seed=42 ---
+[0] best = 1653214
+[1] best = 1607545
+[8] PR = 1398207
+[39] shake = 1390760
+Best cost: 1390760
+Time     : 7213.78s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_15.txt
+Optimal (if known): None
+Best MA cost: 1390760
+
+--- Averages over 1 runs ---
+Time to best : 7213.78 s
+Total time   : 7213.78 s
+Gap (%)      : 0.00 ± 0.00
+I=140, J=280, K=700, supply=11200, demand=11200
+
+Instance loaded:
+I=140, J=280, K=700
+
+--- Run 1/1 seed=42 ---
+[0] best = 1690757
+[2] best = 1590419
+[3] best = 1551343
+[8] PR = 1515985
+[16] PR = 1439351
+[24] PR = 1406305
+Best cost: 1406305
+Time     : 10404.42s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_16.txt
+Optimal (if known): None
+Best MA cost: 1406305
+
+--- Averages over 1 runs ---
+Time to best : 10404.42 s
+Total time   : 10404.42 s
+Gap (%)      : 0.00 ± 0.00
+I=150, J=300, K=600, supply=12000, demand=12000
+
+Instance loaded:
+I=150, J=300, K=600
+
+--- Run 1/1 seed=42 ---
+[0] best = 2384951
+[1] best = 2251306
+[8] best = 2124442
+Best cost: 2124442
+Time     : 10331.83s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_17.txt
+Optimal (if known): None
+Best MA cost: 2124442
+
+--- Averages over 1 runs ---
+Time to best : 10331.83 s
+Total time   : 10331.83 s
+Gap (%)      : 0.00 ± 0.00
+I=150, J=300, K=750, supply=12000, demand=12000
+
+Instance loaded:
+I=150, J=300, K=750
+
+--- Run 1/1 seed=42 ---
+[0] best = 1942262
+[1] best = 1834427
+[3] best = 1719149
+[8] best = 1716370
+[8] PR = 1692570
+[39] shake = 1670167
+Best cost: 1670167
+Time     : 16293.94s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_18.txt
+Optimal (if known): None
+Best MA cost: 1670167
+
+--- Averages over 1 runs ---
+Time to best : 16293.94 s
+Total time   : 16293.94 s
+Gap (%)      : 0.00 ± 0.00
+I=160, J=320, K=640, supply=12800, demand=12800
+
+Instance loaded:
+I=160, J=320, K=640
+
+--- Run 1/1 seed=42 ---
+[0] best = 1944076
+[1] best = 1819340
+[4] best = 1779310
+[8] PR = 1618104
+Best cost: 1618104
+Time     : 12078.41s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_19.txt
+Optimal (if known): None
+Best MA cost: 1618104
+
+--- Averages over 1 runs ---
+Time to best : 12078.41 s
+Total time   : 12078.41 s
+Gap (%)      : 0.00 ± 0.00
+
+(venv) matejastojanovic@ttbg-103:~/TS-FCTP-Matheuristics-project/GRASP_part$ python main.py --mode multi --runs 1 --iters 100 ../generated_instances/large_20.txt
+I=160, J=320, K=800, supply=12800, demand=12800
+
+Instance loaded:
+I=160, J=320, K=800
+
+--- Run 1/1 seed=42 ---
+[0] best = 1946972
+[6] best = 1929974
+[7] best = 1848731
+[8] PR = 1735279
+[16] PR = 1719181
+[24] PR = 1682630
+[40] PR = 1635585
+Best cost: 1635585
+Time     : 39019.42s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/large_20.txt
+Optimal (if known): None
+Best MA cost: 1635585
+
+--- Averages over 1 runs ---
+Time to best : 39019.42 s
+Total time   : 39019.42 s
+Gap (%)      : 0.00 ± 0.00

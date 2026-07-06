@@ -1,0 +1,23 @@
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../generated_instances/medium_19.txt
+Dimensions: I=55, J=110, K=275
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 580226.0
+Time to obtain optimal / best-known : 7150.58
+Bestsol (reference used for gap %)  : 580226.0
+Best MA cost across 3 runs      : 686397
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       695336     196.44     634.10    2784436      19.84
+   2       692648     303.91     649.16    2728392      19.38
+   3       686397     634.49     650.73    2785153      18.30
+
+--- Averages over 3 runs ---
+Mean time to best (t)     : 378.28 s
+Mean total time (ttot)    : 644.67 s
+Mean eval calls (eval)    : 2765993.7
+Mean gap (agap) ± std (σ) : 19.17 ± 0.65 %
