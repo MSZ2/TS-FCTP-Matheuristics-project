@@ -57,7 +57,7 @@ CPLEX referentne vrednosti iznosi $\overline{gap}=9{,}24\%$
 na srednjim i $\overline{gap}=29{,}19\%$ ($\sigma=0{,}92\%$) na velikim
 instancama.
 \end{abstract}
-
+\vspace{50pt}
 \textbf{Ključne reči:} dvostepeni transportni problem sa fiksnim troškovima,
 GRASP, metaheuristika, lokalna pretraga, path relinking, vektorizacija,
 paralelizacija, kombinatorna optimizacija.
@@ -315,7 +315,7 @@ a iz njega se nasumično bira par kome se dodeljuje tok
 $q = \min(\text{rem\_s}_i, need)$.
 
 Cela $I \times J$ matrica ocena za tekućeg kupca gradi se i maskira
-vektorizovano preko NumPy broadcast-a (umesto Python petlje
+vektorizovano preko NumPy broadcast-a (umesto dvostruke petlje
 \texttt{for i: for j:} koja generiše listu tuple-ova i sortira je), što je
 za velike instance ($I,J$ reda stotina) dominantan doprinos ubrzanju
 konstrukcije -- u merenjima na srednjoj instanci construction je posle
@@ -350,7 +350,7 @@ Primenjuje se \textit{Variable Neighborhood Descent} (VND) sa četiri
 susedstva, metodom \textit{first improvement} -- prvi pronađeni pomak koji
 smanjuje cenu se prihvata i pretraga se vraća na prvo susedstvo.
 Sve četiri metode koriste vektorizovanu (NumPy) evaluaciju kandidata:
-umesto Python petlje \texttt{for k in range(K)} koja za svakog kupca
+umesto petlje \texttt{for k in range(K)} koja za svakog kupca
 traži ko ga trenutno opslužuje (\texttt{next(j: y[j,k]>0)}), traži se
 jednim pozivom \texttt{np.argmax(y > 0, axis=0)} za sve kupce odjednom.
 
@@ -433,7 +433,7 @@ $best \leftarrow \text{null}$;\quad $best\_cost \leftarrow +\infty$\;
     \lIf{$trial.\text{cost} < best\_cost$}{$best \leftarrow trial$; $best\_cost \leftarrow trial.\text{cost}$}
   }
 }
-\Return $best$ (ili $a$, ako oba pokušaja propadnu)
+\Return $best$ (ili $a$, ako oba propadnu)
 \end{algorithm}
 
 \subsubsection{Perturbacija -- \textit{ruin-and-recreate} (shake)}
@@ -442,7 +442,7 @@ Ako se $20$ uzastopnih iteracija ne pronađe poboljšanje najboljeg rešenja,
 primenjuje se perturbacija: DC-ovi se rangiraju po prosečnom varijabilnom
 trošku po jedinici protoka, uklanja se $50\%$ najskupljih, a kupci koji su
 im bili dodeljeni presmeravaju se na preostale (otvorene) DC-ove po
-najnižoj proceni troška. Nakon \textsc{Repair}-a i provere dopustivosti
+najnižoj proceni troška. Posle \textsc{Repair}-a i provere dopustivosti
 primenjuje se VND; ako je novo rešenje bolje i dopustivo, prihvata se kao
 novo najbolje. Brojač zastoja se resetuje posle svakog pokušaja shake-a
 (bez obzira na uspeh), čime se sprečavaju uzastopni shake-ovi iz istog stanja.
@@ -461,8 +461,8 @@ dva mesta dominirala vremenom izvršavanja: (1) konstrukcija -- $I \times J$
 kandidata generisanih Python petljom po jedinici potražnje, i (2)
 \texttt{compute\_cost()} -- računanje skupa otvorenih DC-ova Python petljom
 od $J$ elemenata sa po dva poziva \texttt{np.sum()}. Oba mesta su zamenjena
-NumPy vektorizovanim ekvivalentima (broadcast, boolean maske, fensi
-indeksiranje), bez promene rezultata pretrage -- ista RCL/$\alpha$ logika
+NumPy vektorizovanim ekvivalentima (broadcast, boolean maske), 
+bez promene rezultata pretrage -- ista RCL/$\alpha$ logika
 i ista \textit{first-improvement} pravila, samo izračunata bržim putem.
 Na srednjoj test instanci ovo je local search ubrzalo $\approx 1{,}75\times$
 (sa 12{,}8~s na 7{,}3~s za 10 poziva construction+local-search).
@@ -481,9 +481,9 @@ $n_{\text{workers}}$ iteracija odjednom preko \texttt{multiprocessing.Pool}:
     jednom, preko \texttt{initializer} funkcije \texttt{\_init\_worker}
     (ne pri svakom pozivu zadatka).
   \item Funkcija \texttt{\_construct\_and\_improve(alpha)} u worker procesu
-    radi construction $+$ local search i vraća samo lagan rezultat
-    ($x$, $y$, cena, \texttt{open\_dc}, broj poziva funkcije cilja u tom
-    zadatku) -- ne šalje nazad cost-matrice instance, koje su nepromenjene
+    radi construction $+$ local search i vraća samo rezultat
+    ($x$, $y$, cena, \texttt{open\_dc}, broj poziva funkcije cilja
+    ) -- ne šalje nazad cost-matrice instance, koje su nepromenjene
     i već dostupne u worker procesu.
   \item Posle svakog batch-a, elitni bazen, praćenje najboljeg rešenja,
     \textit{path relinking} i shake primenjuju se \textbf{sekvencijalno},
@@ -631,17 +631,14 @@ dopustivo rešenje (bez dokaza optimalnosti) -- to je i dalje referentna
 vrednost korišćena za $Bestsol$, u skladu sa napomenom iz specifikacije
 izveštaja ("optimalno ili najbolje poznato rešenje").
 
-\textit{Platforma za CPLEX}: računar \texttt{ttbg-103}, Linux 6.6.87.2-WSL2,
-IBM ILOG CPLEX, jedan procesni tok.
 
 \subsection{Podešavanja GRASP-a, platforma i metodologija izveštaja}
 
-\textit{Platforma za GRASP}: računar \texttt{ttbg-103}, Linux
-6.6.87.2-microsoft-standard-WSL2, x86\_64, 16 CPU jezgara, Python 3.12.3,
+\textit{Platforma za GRASP}: x86\_64, 16 CPU jezgara, Python 3.12.3,
 NumPy 2.4.4. Algoritam je izvršavan paralelno sa
 $n_{\text{workers}} = \text{cpu\_count}()-1 = 15$ worker procesa.
 
-Svaka instanca je izvršena $k=3$ puta (seme $42 + 100r$ za $r$-to
+Svaka instanca je izvršena $k=3$ puta (seed $42 + 100r$ za $r$-to
 izvršavanje, $r=0,1,2$), sa fiksnim brojem iteracija po grupi:
 \begin{itemize}
   \item Male instance: $T = 500$;
@@ -918,10 +915,6 @@ Mogući pravci daljeg unapređenja:
   \item Ugradnja intenzivnijeg path relinking-a koji istražuje i
     međutačke na putu između dva elitna rešenja, ne samo krajnje uniju i
     presek;
-  \item Uvođenje Lagranževe relaksacije za generisanje boljih donjih
-    granica i vođenje pretrage;
-  \item Hibridizacija sa CPLEX-om -- korišćenje GRASP rešenja kao
-    \textit{warm start} za MIP solver.
 \end{itemize}
 
 \begin{thebibliography}{9}
