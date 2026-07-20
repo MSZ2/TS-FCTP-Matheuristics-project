@@ -1,3 +1,0 @@
-Instance: ../generated_instances/small_5.txt
-Best MA: 236121
-Run 1: 236121 gap=0.00%

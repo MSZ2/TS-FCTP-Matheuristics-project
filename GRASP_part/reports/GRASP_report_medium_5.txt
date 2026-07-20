@@ -1,3 +1,0 @@
-Instance: ../generated_instances/medium_5.txt
-Best MA: 559716
-Run 1: 559716 gap=0.00%
