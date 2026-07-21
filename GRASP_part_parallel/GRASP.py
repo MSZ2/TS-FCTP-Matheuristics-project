@@ -211,7 +211,8 @@ class LocalSearch:
     # -----------------------------------------------------------------
     def _reassign_customer(self, sol):
         """
-        Move a whole customer to a cheaper DC.
+        Move a whole customer (all of its incoming flow, even when
+        currently split across several DCs) to a single cheaper DC.
         Uses first‑improvement and limits the number of target DCs
         tried per customer to 10 (random order).
         """
@@ -219,31 +220,26 @@ class LocalSearch:
         # For each customer, try at most 10 random target DCs.
         max_targets = min(d.J, 10)
 
-        # Vectorised "who currently serves customer k" lookup, computed
-        # once instead of an O(J) Python scan per customer.
-        has_owner = sol.y.any(axis=0)
-        owner = np.where(has_owner, np.argmax(sol.y > 0, axis=0), -1)
+        # Cost currently incurred serving each customer, summed over
+        # every DC feeding it. A customer's demand can be split across
+        # several DCs, so picking a single "owner" (e.g. via argmax on
+        # y > 0) would only account for one arc and silently ignore the
+        # rest of that customer's flow.
+        old_full = (sol.y * d.c).sum(axis=0) + ((sol.y > 0) * d.g).sum(axis=0)
 
         for k in range(d.K):
-            j_from = int(owner[k])
-            if j_from < 0:
-                continue
-            qty = sol.y[j_from, k]
-            if qty == 0:
+            total = int(sol.y[:, k].sum())
+            if total == 0:
                 continue
 
-            # Random sample of target DCs (cheaper than shuffling all J
-            # of them when only `max_targets` are ever tried).
-            sample_n = min(d.J, max_targets + 1)
-            targets = [j for j in random.sample(range(d.J), sample_n) if j != j_from][:max_targets]
+            targets = random.sample(range(d.J), min(d.J, max_targets))
 
             for j_to in targets:
-                old_full = d.c[j_from, k] * d.d[k] + d.g[j_from, k]
-                new_full = d.c[j_to,   k] * d.d[k] + d.g[j_to,   k]
-                if new_full < old_full:
+                new_full = d.c[j_to, k] * d.d[k] + d.g[j_to, k]
+                if new_full < old_full[k]:
                     trial = sol.copy()
-                    trial.y[j_to, k] += qty
-                    trial.y[j_from, k] = 0
+                    trial.y[:, k] = 0
+                    trial.y[j_to, k] = total
                     if repair(trial, d):
                         trial.compute_cost()
                         if trial.cost < sol.cost:
@@ -269,14 +265,15 @@ class LocalSearch:
         random.shuffle(closed)
         max_candidates = min(len(closed), 15)
 
-        # Vectorised owner lookup + old-cost, computed once and reused
-        # across all candidate DCs (sol itself doesn't change between
-        # candidates, only the fresh `trial` copy per candidate does).
-        has_owner = sol.y.any(axis=0)
-        owner = np.where(has_owner, np.argmax(sol.y > 0, axis=0), -1)
-        ks_valid = np.flatnonzero(has_owner)
-        owner_valid = owner[ks_valid]
-        old_full = d.c[owner_valid, ks_valid] * d.d[ks_valid] + d.g[owner_valid, ks_valid]
+        # Cost currently incurred serving each customer, summed over
+        # every DC feeding it (computed once, reused across candidates
+        # below). Demand can be split across several DCs, so a single
+        # "owner" lookup (e.g. via argmax on y > 0) would only account
+        # for one arc and silently ignore the rest of that customer's
+        # flow when the move is applied.
+        ks_valid = np.flatnonzero(sol.y.sum(axis=0) > 0)
+        old_full = (sol.y[:, ks_valid] * d.c[:, ks_valid]).sum(axis=0) + \
+                   ((sol.y[:, ks_valid] > 0) * d.g[:, ks_valid]).sum(axis=0)
 
         for j_new in closed[:max_candidates]:
             new_full = d.c[j_new, ks_valid] * d.d[ks_valid] + d.g[j_new, ks_valid]
@@ -286,9 +283,8 @@ class LocalSearch:
 
             trial = sol.copy()
             ks = ks_valid[move_mask]
-            src = owner_valid[move_mask]
-            trial.y[j_new, ks] += trial.y[src, ks]
-            trial.y[src, ks] = 0
+            trial.y[:, ks] = 0
+            trial.y[j_new, ks] = d.d[ks]
 
             if repair(trial, d):
                 trial.compute_cost()
