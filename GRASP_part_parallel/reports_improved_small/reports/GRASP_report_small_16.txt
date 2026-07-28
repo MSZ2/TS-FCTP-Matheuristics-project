@@ -1,0 +1,30 @@
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/GRASP_part_parallel/../generated_instances/small_16.txt
+Dimensions: I=14, J=28, K=56
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 349820.0
+Time to obtain optimal / best-known : 3479.76
+Bestsol (reference used for gap %)  : 349820.0
+Best MA cost across 10 runs      : 382263
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       386865     110.91     126.94    2298076      10.59
+   2       386343      10.80     131.16    2295975      10.44
+   3       389820      46.87     125.50    2306335      11.43
+   4       388041     104.89     119.65    2267805      10.93
+   5       386588      76.19     124.49    2264729      10.51
+   6       382263      33.74     124.26    2275831       9.27
+   7       389703      15.03     125.99    2324483      11.40
+   8       386361      63.38     123.45    2294031      10.45
+   9       388574     109.57     133.29    2315492      11.08
+  10       386485      98.17     119.88    2301819      10.48
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 66.95 s
+Mean total time (ttot)    : 125.46 s
+Mean eval calls (eval)    : 2294457.6
+Mean gap (agap) ± std (σ) : 10.66 ± 0.59 %
