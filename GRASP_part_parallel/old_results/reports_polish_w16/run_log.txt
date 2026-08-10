@@ -1,0 +1,130 @@
+=== small_1
+[71] best = 151786
+Best cost: 151786
+Time     : 20.63s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../../generated_instances/small_1.txt
+Dimensions: I=4, J=8, K=16
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 150568.0
+Time to obtain optimal / best-known : 1.3
+Bestsol (reference used for gap %)  : 150568.0
+Best MA cost across 1 runs      : 151786
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       151786       1.04      20.63    1018975       0.81
+
+--- Averages over 1 runs ---
+Mean time to best (t)     : 1.04 s
+Mean total time (ttot)    : 20.63 s
+Mean eval calls (eval)    : 1018975.0
+Mean gap (agap) ± std (σ) : 0.81 ± 0.00 %
+=== small_2
+[253] best = 159631
+Best cost: 159631
+Time     : 28.80s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../../generated_instances/small_2.txt
+Dimensions: I=4, J=8, K=20
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 156022.0
+Time to obtain optimal / best-known : 1.51
+Bestsol (reference used for gap %)  : 156022.0
+Best MA cost across 1 runs      : 159631
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       159631       7.15      28.80    1219434       2.31
+
+--- Averages over 1 runs ---
+Mean time to best (t)     : 7.15 s
+Mean total time (ttot)    : 28.80 s
+Mean eval calls (eval)    : 1219434.0
+Mean gap (agap) ± std (σ) : 2.31 ± 0.00 %
+=== small_3
+[59] best = 163375
+Best cost: 163375
+Time     : 38.11s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../../generated_instances/small_3.txt
+Dimensions: I=4, J=10, K=20
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 161224.0
+Time to obtain optimal / best-known : 1.92
+Bestsol (reference used for gap %)  : 161224.0
+Best MA cost across 1 runs      : 163375
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       163375       2.37      38.11    1510664       1.33
+
+--- Averages over 1 runs ---
+Mean time to best (t)     : 2.37 s
+Mean total time (ttot)    : 38.11 s
+Mean eval calls (eval)    : 1510664.0
+Mean gap (agap) ± std (σ) : 1.33 ± 0.00 %
+=== small_4
+[504] PR = 188835
+Best cost: 188835
+Time     : 47.62s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../../generated_instances/small_4.txt
+Dimensions: I=6, J=12, K=24
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 186537.0
+Time to obtain optimal / best-known : 1.9
+Bestsol (reference used for gap %)  : 186537.0
+Best MA cost across 1 runs      : 188835
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       188835      25.11      47.62    1597190       1.23
+
+--- Averages over 1 runs ---
+Mean time to best (t)     : 25.11 s
+Mean total time (ttot)    : 47.62 s
+Mean eval calls (eval)    : 1597190.0
+Mean gap (agap) ± std (σ) : 1.23 ± 0.00 %
+=== small_5
+[306] best = 219609
+Best cost: 219609
+Time     : 66.85s
+
+============================================================
+GRASP REPORT
+============================================================
+Instance: ../../generated_instances/small_5.txt
+Dimensions: I=6, J=12, K=30
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 213785.0
+Time to obtain optimal / best-known : 2.06
+Bestsol (reference used for gap %)  : 213785.0
+Best MA cost across 1 runs      : 219609
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       219609      21.52      66.85    2276432       2.72
+
+--- Averages over 1 runs ---
+Mean time to best (t)     : 21.52 s
+Mean total time (ttot)    : 66.85 s
+Mean eval calls (eval)    : 2276432.0
+Mean gap (agap) ± std (σ) : 2.72 ± 0.00 %

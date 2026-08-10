@@ -350,6 +350,14 @@ class LocalSearch:
     VND is what actually makes a restart explore a different region.
     """
 
+    # How many second-stage-improving targets `_reassign_customer` puts
+    # through a full (repair + eval_cost) evaluation. The move was 58 %
+    # of total runtime because it fully evaluated every one of up to
+    # min(J, 36) ranked targets; `_shift_flow` already screens the same
+    # way (`max_trials`). A class attribute so experiments can sweep it
+    # without editing the move.
+    MAX_FULL_TARGETS = 6
+
     def __init__(self, data, allowed_dc=None):
         self.data = data
         self.allowed_dc = allowed_dc
@@ -448,9 +456,15 @@ class LocalSearch:
         move blind to consolidations that pay off only in the first
         stage. A small random exploration quota is evaluated on top of
         the second-stage-improving targets.
+
+        Only the `MAX_FULL_TARGETS` best-ranked improving targets are
+        evaluated in full, since `new_full` already orders them by exact
+        second-stage cost -- the same two-level screening `_shift_flow`
+        uses. Evaluating all min(J, 36) of them made this move 58 % of
+        total runtime.
         """
         d = self.data
-        max_targets = min(d.J, 36)
+        max_targets = min(d.J, self.MAX_FULL_TARGETS)
         n_explore = 2
 
         # Cost currently incurred serving each customer, summed over
@@ -905,6 +919,53 @@ def perturb(sol, data, max_close=None):
             sol.y[j, k] = 0
 
 
+def elite_dc_mask(sol, J, n_extra=1):
+    """
+    Mask confining an ILS re-descent to the seed's own DC configuration,
+    plus `n_extra` randomly chosen closed DCs.
+
+    The restart branch already runs its local search under the
+    construction's blacklist, for the reason spelled out there: a mask
+    that only covers the construction is useless, because `_add_dc`
+    immediately re-opens the blacklisted DCs and the restart lands back
+    in the same basin. The ILS branch used to skip the mask entirely and
+    so had exactly that problem -- every perturbation of an elite
+    solution drifted back into the generic basin, and the elite pool's
+    DC configuration (the one thing path relinking works to find) was
+    never actually intensified.
+
+    Measured on small_1 (1000 iterations, 3 runs): without the mask the
+    optimum 150568 is never reached (best 150906, 0/3); with it, 3/3, at
+    the same wall-clock. For scale: restricting construction + local
+    search to the single best DC subset reaches the optimum roughly once
+    per 40-120 restarts, so what was missing was not *finding* the right
+    DC set but *re-descending inside it*.
+
+    `n_extra` is the escape hatch. With 0 the DC set can only shrink to a
+    subset of the seed's under ILS, and new configurations have to come
+    from the restart branch, path relinking or shake -- fine on small_1,
+    where the restart branch finds the best subset on its own, but on the
+    larger instances (J = 40-320) it cannot, so the pool would hold
+    near-miss configurations with no way for ILS to walk out of them.
+    One extra DC makes each descent a 1-neighbourhood step in DC-set
+    space, at ~10 % more time per iteration.
+
+    Note the mask only blocks *opening a currently closed* DC (see
+    `_may_open` / the `shut` term in `_shift_flow`). `perturb` runs
+    before the local search and can dump flow on DCs outside the mask,
+    so the trajectory does leave the elite configuration -- it just
+    cannot return to those DCs once the search closes them. Perturb
+    pushes out, the mask ratchets back.
+    """
+    mask = np.zeros(J, dtype=bool)
+    mask[list(sol.open_dc)] = True
+    closed = np.flatnonzero(~mask)
+    if n_extra and len(closed):
+        for j in random.sample(list(closed), min(n_extra, len(closed))):
+            mask[j] = True
+    return mask
+
+
 def _construct_and_improve(task):
     """
     One parallel iteration. `task` is (alpha, seed_y):
@@ -912,7 +973,8 @@ def _construct_and_improve(task):
       * seed_y is None -> ordinary GRASP restart (construction + VND),
         under a random DC blacklist.
       * seed_y is an elite solution's y -> ILS iteration: perturb it and
-        re-descend, unrestricted.
+        re-descend under `elite_dc_mask`, i.e. confined to the seed's own
+        DC configuration.
 
     The second mode is the only intensification the algorithm has:
     without it every worker starts from scratch and the diverse elite
@@ -929,8 +991,11 @@ def _construct_and_improve(task):
         sol = Solution(d)
         sol.y = seed_y.copy()
         sol.compute_cost()
+        # drawn before `perturb`, so it describes the elite configuration
+        # we mean to intensify, not the kicked one
+        mask = elite_dc_mask(sol, d.J)
         perturb(sol, d)
-        sol = LocalSearch(d).improve(sol)
+        sol = LocalSearch(d, mask).improve(sol)
         sol.compute_cost()
         return sol.x, sol.y, sol.cost, sol.open_dc, _get_eval_count()
 
@@ -994,12 +1059,14 @@ class GRASP:
                 alpha = random.uniform(0.05, 0.5)
 
             if elite.pool and random.random() < self.p_seed:
-                # ILS iteration: perturb an elite solution and re-descend
+                # ILS iteration: perturb an elite solution and re-descend,
+                # confined to its DC configuration (see `elite_dc_mask`)
                 sol = Solution(self.data)
                 sol.y = random.choice(elite.pool).y.copy()
                 sol.compute_cost()
+                mask = elite_dc_mask(sol, self.data.J)
                 perturb(sol, self.data)
-                sol = ls.improve(sol)
+                sol = LocalSearch(self.data, mask).improve(sol)
             else:
                 mask = random_dc_mask(self.data.J)
                 sol = Construction(self.data, alpha, mask).build()

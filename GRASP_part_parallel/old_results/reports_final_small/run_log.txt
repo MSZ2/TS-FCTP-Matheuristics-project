@@ -1,0 +1,310 @@
+=== small_1
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_1.txt
+Dimensions: I=4, J=8, K=16
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 150568.0
+Time to obtain optimal / best-known : 1.3
+Bestsol (reference used for gap %)  : 150568.0
+Best MA cost across 10 runs      : 150568
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       150568      14.94      15.11     935107       0.00
+   2       150906       0.38      16.28     943281       0.22
+   3       150906       5.40      16.21     936061       0.22
+   4       150568       2.34      16.68     933969       0.00
+   5       150568       6.97      16.96     942006       0.00
+   6       150568      12.58      19.43     929855       0.00
+   7       150568      18.01      20.63     935755       0.00
+   8       150906       3.05      22.60     951207       0.22
+   9       150906       2.72      19.80     939742       0.22
+  10       150906       0.49      20.06     946626       0.22
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 6.69 s
+Mean total time (ttot)    : 18.38 s
+Mean eval calls (eval)    : 939360.9
+Mean gap (agap) ± std (σ) : 0.11 ± 0.11 %
+=== small_2
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_2.txt
+Dimensions: I=4, J=8, K=20
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 156022.0
+Time to obtain optimal / best-known : 1.51
+Bestsol (reference used for gap %)  : 156022.0
+Best MA cost across 10 runs      : 159520
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       159631      14.85      25.94    1127683       2.31
+   2       159520       5.50      23.70    1122544       2.24
+   3       159520       2.36      24.25    1148941       2.24
+   4       159520      17.68      22.47    1122770       2.24
+   5       159520       8.20      25.26    1140737       2.24
+   6       159520       0.63      26.74    1145925       2.24
+   7       159520       6.49      25.64    1131511       2.24
+   8       159520      12.42      28.38    1133912       2.24
+   9       159520       2.45      28.87    1138511       2.24
+  10       159520      21.92      25.77    1129517       2.24
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 9.25 s
+Mean total time (ttot)    : 25.70 s
+Mean eval calls (eval)    : 1134205.1
+Mean gap (agap) ± std (σ) : 2.25 ± 0.02 %
+=== small_3
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_3.txt
+Dimensions: I=4, J=10, K=20
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 161224.0
+Time to obtain optimal / best-known : 1.92
+Bestsol (reference used for gap %)  : 161224.0
+Best MA cost across 10 runs      : 163375
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       163375       2.86      35.07    1358608       1.33
+   2       163375       6.90      33.60    1356159       1.33
+   3       163375       2.72      31.59    1337274       1.33
+   4       163375       8.43      33.88    1357451       1.33
+   5       163375      12.01      33.22    1345053       1.33
+   6       163375      10.00      38.80    1335257       1.33
+   7       163375       3.31      35.59    1342610       1.33
+   8       163375       3.21      32.41    1360036       1.33
+   9       163375       6.31      34.74    1345757       1.33
+  10       163375       7.51      32.10    1375538       1.33
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 6.33 s
+Mean total time (ttot)    : 34.10 s
+Mean eval calls (eval)    : 1351374.3
+Mean gap (agap) ± std (σ) : 1.33 ± 0.00 %
+=== small_4
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_4.txt
+Dimensions: I=6, J=12, K=24
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 186537.0
+Time to obtain optimal / best-known : 1.9
+Bestsol (reference used for gap %)  : 186537.0
+Best MA cost across 10 runs      : 187034
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       190600       3.19      39.76    1428464       2.18
+   2       188835       5.69      41.08    1439874       1.23
+   3       187642       7.21      36.36    1414315       0.59
+   4       187034      35.82      36.14    1409619       0.27
+   5       188835      28.21      37.56    1429452       1.23
+   6       188835      13.33      34.87    1428312       1.23
+   7       190600       2.02      38.46    1434577       2.18
+   8       190600       3.95      37.63    1452969       2.18
+   9       187642      35.81      37.20    1412904       0.59
+  10       190600       2.62      37.83    1427172       2.18
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 13.79 s
+Mean total time (ttot)    : 37.69 s
+Mean eval calls (eval)    : 1427765.8
+Mean gap (agap) ± std (σ) : 1.39 ± 0.71 %
+=== small_5
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_5.txt
+Dimensions: I=6, J=12, K=30
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 213785.0
+Time to obtain optimal / best-known : 2.06
+Bestsol (reference used for gap %)  : 213785.0
+Best MA cost across 10 runs      : 217852
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       219609       6.68      53.86    1967129       2.72
+   2       217852       1.23      54.26    1946601       1.90
+   3       219609       0.78      51.60    1964783       2.72
+   4       219609      28.28      52.22    1955786       2.72
+   5       219609      18.98      53.54    1980377       2.72
+   6       219609       7.47      51.89    1995522       2.72
+   7       219609       0.62      52.60    1956663       2.72
+   8       219609      21.60      48.41    1918078       2.72
+   9       219609       7.56      50.02    1939948       2.72
+  10       218448      47.35      53.62    1969465       2.18
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 14.06 s
+Mean total time (ttot)    : 52.20 s
+Mean eval calls (eval)    : 1959435.2
+Mean gap (agap) ± std (σ) : 2.59 ± 0.28 %
+=== small_6
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_6.txt
+Dimensions: I=6, J=15, K=30
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 188954.0
+Time to obtain optimal / best-known : 7.15
+Bestsol (reference used for gap %)  : 188954.0
+Best MA cost across 10 runs      : 194679
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       197203      31.26      76.45    2340041       4.37
+   2       195849      23.56      73.49    2298453       3.65
+   3       197203       1.05      69.83    2372767       4.37
+   4       197203      20.81      66.56    2310780       4.37
+   5       196839      52.60      63.85    2320115       4.17
+   6       197203       1.89      65.75    2346304       4.37
+   7       194679      24.73      69.67    2316873       3.03
+   8       196519      65.33      67.11    2323700       4.00
+   9       195849      26.01      71.41    2354674       3.65
+  10       196869      12.95      72.28    2347861       4.19
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 26.02 s
+Mean total time (ttot)    : 69.64 s
+Mean eval calls (eval)    : 2333156.8
+Mean gap (agap) ± std (σ) : 4.02 ± 0.42 %
+=== small_7
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_7.txt
+Dimensions: I=8, J=16, K=32
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 231984.0
+Time to obtain optimal / best-known : 17.97
+Bestsol (reference used for gap %)  : 231984.0
+Best MA cost across 10 runs      : 239117
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       239185      54.31      67.21    2106918       3.10
+   2       240457      19.18      68.79    2106867       3.65
+   3       241249      14.98      65.86    2076631       3.99
+   4       241209      64.41      69.52    2099537       3.98
+   5       239821       4.97      65.10    2111643       3.38
+   6       239117      55.37      66.30    2098799       3.07
+   7       240739      13.07      63.09    2095698       3.77
+   8       240457       7.82      68.03    2151765       3.65
+   9       241001      38.42      67.44    2090639       3.89
+  10       239117      23.75      68.08    2088830       3.07
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 29.63 s
+Mean total time (ttot)    : 66.94 s
+Mean eval calls (eval)    : 2102732.7
+Mean gap (agap) ± std (σ) : 3.56 ± 0.35 %
+=== small_8
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_8.txt
+Dimensions: I=8, J=16, K=40
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 202467.0
+Time to obtain optimal / best-known : 11.79
+Bestsol (reference used for gap %)  : 202467.0
+Best MA cost across 10 runs      : 210622
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       210817      72.75      95.25    2643458       4.12
+   2       210622      81.21      99.11    2659246       4.03
+   3       211659      77.14      99.52    2687988       4.54
+   4       212384      75.59      97.14    2679638       4.90
+   5       211140      63.71      96.54    2680532       4.28
+   6       212169      80.85      98.35    2678328       4.79
+   7       213231      69.11      90.51    2677250       5.32
+   8       211282      77.73      88.12    2636346       4.35
+   9       212774      35.37      93.49    2686230       5.09
+  10       213360      90.97     103.78    2689847       5.38
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 72.44 s
+Mean total time (ttot)    : 96.18 s
+Mean eval calls (eval)    : 2671886.3
+Mean gap (agap) ± std (σ) : 4.68 ± 0.46 %
+=== small_9
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_9.txt
+Dimensions: I=8, J=20, K=40
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 210740.0
+Time to obtain optimal / best-known : 25.79
+Bestsol (reference used for gap %)  : 210740.0
+Best MA cost across 10 runs      : 214410
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       215335      25.04     121.00    3342961       2.18
+   2       214410     104.73     108.31    3310710       1.74
+   3       214410      34.11     117.61    3308472       1.74
+   4       215662      21.60     119.24    3297440       2.34
+   5       214410      84.97     111.33    3254532       1.74
+   6       217673      26.10     116.77    3360419       3.29
+   7       214410      34.31     119.07    3363586       1.74
+   8       216037      23.92     107.86    3321985       2.51
+   9       214410      61.53     105.44    3336780       1.74
+  10       214410      10.43     106.92    3392792       1.74
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 42.68 s
+Mean total time (ttot)    : 113.36 s
+Mean eval calls (eval)    : 3328967.7
+Mean gap (agap) ± std (σ) : 2.08 ± 0.49 %
+=== small_10
+============================================================
+GRASP REPORT
+============================================================
+Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/generated_instances/small_10.txt
+Dimensions: I=10, J=20, K=40
+Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
+
+Optimal / best-known (if available): 258236.0
+Time to obtain optimal / best-known : 7.38
+Bestsol (reference used for gap %)  : 258236.0
+Best MA cost across 10 runs      : 264491
+
+--- Per-run results ---
+ run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
+   1       267245      75.54     106.48    2983832       3.49
+   2       264491      60.15     104.93    2976710       2.42
+   3       265131      52.23     107.52    3028346       2.67
+   4       268372       5.87     103.64    3042705       3.93
+   5       265945      84.30     100.30    2995505       2.99
+   6       267281      60.70     101.92    2972507       3.50
+   7       264693      66.64      99.96    2956029       2.50
+   8       264491      79.84     100.97    2995571       2.42
+   9       265479      11.41     102.76    3022316       2.80
+  10       267281      16.64     101.42    3018426       3.50
+
+--- Averages over 10 runs ---
+Mean time to best (t)     : 51.33 s
+Mean total time (ttot)    : 102.99 s
+Mean eval calls (eval)    : 2999194.7
+Mean gap (agap) ± std (σ) : 3.02 ± 0.52 %
