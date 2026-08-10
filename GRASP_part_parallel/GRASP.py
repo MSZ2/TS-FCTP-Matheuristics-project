@@ -130,6 +130,24 @@ def repair(sol, data):
     loop (cumsum + searchsorted over all suppliers) was also tried and
     was *slower* -- it does O(I) work where the loop's early break does
     O(1-2).
+
+    This function is 38.9 % of runtime on small_1 and 72.8 % on large_1,
+    so it is the obvious thing to optimise further. It has been tried
+    and it does not pay off. Hoisting the per-DC key and sort out of the
+    loop -- `keys = b * demands + f` and one (I, J) argsort, restricted
+    to DCs with non-zero demand, with the `-rem_s` tie-break only for
+    columns whose key actually ties -- is bit-identical (0 mismatches in
+    `x` and in feasibility over 16000 states sampled from real searches)
+    and cuts the sorting itself from 310 us to 147 us per call on
+    large_1. But end to end it gives 1.68x on medium_1, 0.88x on
+    small_1 and 1.04x on large_1: the numpy per-call overhead it removes
+    only dominates when I is small and J is large. On small_1 the
+    original sorts arrays of *four* elements, so there is no overhead to
+    remove and six extra vectorised calls are pure loss; on large_1
+    there is enough real work per column that the overhead never
+    dominated. Converting the ranking with `tolist()` for a cheaper
+    inner loop makes it worse still -- it is eager, materialising all I
+    suppliers per DC while the loop stops after one or two.
     """
     sol.x.fill(0)
     rem_s = data.s.copy()
@@ -899,24 +917,32 @@ class PathRelinking:
                 best, best_cost = cur.copy(), cur.cost
         return best
 
-    def relink(self, a, b, max_steps=None, max_cand=8):
+    def relink(self, a, b, max_steps=15, max_cand=8):
         """
-        `max_steps` is a fraction of the path, not a work budget.
+        `max_steps` stays absolute, and deliberately short.
 
         The walk exchanges one customer column per step, so a path
-        between two solutions is up to K steps long. A flat 15 covered
-        essentially the whole path on small_1 (K = 16) but only ~2 % of
-        it on the large instances (K = 800) -- the walk would stop right
-        next to its starting parent and never reach the middle of the
-        path, which is where path relinking expects to find anything
-        worth keeping. So it scales with K, floored at the old 15.
+        between two solutions is up to K steps long and a flat 15 covers
+        only ~2 % of it on the large instances. That looked like a
+        qualitative bug -- the walk stopping next to its starting parent
+        and never reaching the middle of the path, where path relinking
+        is supposed to find things -- so scaling it with K was tried:
 
-        `max_cand` stays absolute: that one *is* a sampling budget (how
-        many candidate columns are scored per step), and each candidate
-        costs a repair.
+            large_1, 100 iterations, 1 run each
+              max_steps = 15  ->  831511 (gap 12.07 %), 1423 s
+              max_steps = 70  ->  834052 (gap 12.41 %), 1609 s
+
+        13 % slower for no gain. The classic middle-of-the-path argument
+        does not apply here: `relink` keeps the best point it sees and
+        then runs a full `ls.improve()` on it, so the descent does the
+        real work and the walk only has to supply a decent starting
+        point -- which turns out to sit near the parent. Longer walks
+        just spend evaluations on distant points that never pay off.
+
+        (The quality difference is inside this instance's run-to-run
+        spread of ~1.7 %; the point is that there is no evidence of a
+        gain, while the time cost is consistent and predicted.)
         """
-        if max_steps is None:
-            max_steps = max(15, self.data.K // 4)
         # relink in both directions -- the two paths are different
         best = None
         for src, dst in ((a, b), (b, a)):
