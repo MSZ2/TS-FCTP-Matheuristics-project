@@ -1,7 +1,7 @@
 ============================================================
 GRASP REPORT
 ============================================================
-Instance: /home/matejastojanovic/TS-FCTP-Matheuristics-project/GRASP_part_parallel/../generated_instances/small_2.txt
+Instance: ../generated_instances/small_2.txt
 Dimensions: I=4, J=8, K=20
 Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39, x86_64, 16 CPUs
 
@@ -12,19 +12,19 @@ Best MA cost across 10 runs      : 159520
 
 --- Per-run results ---
  run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
-   1       159520       2.01      17.26    1489673       2.24
-   2       159520       0.62      18.26    1480740       2.24
-   3       159520       0.93      17.27    1464020       2.24
-   4       159520       4.56      16.88    1471173       2.24
-   5       159520       0.19      16.68    1475174       2.24
-   6       159520       1.82      17.59    1496136       2.24
-   7       159520       0.74      16.23    1475424       2.24
-   8       159520       2.25      16.15    1477502       2.24
-   9       159520       0.38      16.48    1506340       2.24
-  10       159520       0.67      19.77    1492212       2.24
+   1       159520       1.26      15.93    1482810       2.24
+   2       159520       2.86      15.84    1491809       2.24
+   3       159520       0.21      16.29    1506506       2.24
+   4       159520       6.15      15.67    1488851       2.24
+   5       159520       3.27      16.07    1504123       2.24
+   6       159520       1.20      15.63    1488727       2.24
+   7       159520       0.80      16.23    1496586       2.24
+   8       159520       0.37      15.96    1499139       2.24
+   9       159520       3.35      15.83    1486789       2.24
+  10       159520       0.56      15.46    1483713       2.24
 
 --- Averages over 10 runs ---
-Mean time to best (t)     : 1.42 s
-Mean total time (ttot)    : 17.26 s
-Mean eval calls (eval)    : 1482839.4
+Mean time to best (t)     : 2.00 s
+Mean total time (ttot)    : 15.89 s
+Mean eval calls (eval)    : 1492905.3
 Mean gap (agap) ± std (σ) : 2.24 ± 0.00 %
