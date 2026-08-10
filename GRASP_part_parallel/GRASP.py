@@ -966,26 +966,57 @@ def elite_dc_mask(sol, J, n_extra=1):
     return mask
 
 
+_WORKER_PR = None
+
+
 def _construct_and_improve(task):
     """
-    One parallel iteration. `task` is (alpha, seed_y):
+    One parallel task. `task` is a tagged tuple; all three kinds return
+    the same 5-tuple (x, y, cost, open_dc, evals):
 
-      * seed_y is None -> ordinary GRASP restart (construction + VND),
-        under a random DC blacklist.
-      * seed_y is an elite solution's y -> ILS iteration: perturb it and
-        re-descend under `elite_dc_mask`, i.e. confined to the seed's own
-        DC configuration.
+      * ('ls', alpha, None)    -> ordinary GRASP restart (construction +
+        VND) under a random DC blacklist.
+      * ('ls', alpha, seed_y)  -> ILS iteration: perturb an elite
+        solution and re-descend under `elite_dc_mask`, i.e. confined to
+        the seed's own DC configuration.
+      * ('pr', xa, ya, xb, yb) -> path relinking between two elite
+        solutions.
 
-    The second mode is the only intensification the algorithm has:
-    without it every worker starts from scratch and the diverse elite
-    pool is consumed by nothing but path relinking every 8 iterations.
+    The ILS mode is the only intensification the algorithm has: without
+    it every worker starts from scratch and the diverse elite pool is
+    consumed by nothing but path relinking.
+
+    Path relinking runs here rather than in the main process because it
+    is not cheap: measured on small_1 it was 30 % of total wall-clock
+    while all `n_workers` workers sat idle waiting for the next batch.
+    It keeps its own worker-local `PathRelinking` (and thus
+    `LocalSearch`) instance, since building one per task would allocate
+    on every call.
     """
-    alpha, seed_y = task
     # Reset this worker's own counter so each task reports only the
     # evals it personally performed (Pool reuses worker processes
     # across many tasks, so the counter would otherwise keep growing).
     _reset_eval_count()
     d = _WORKER_DATA
+
+    if task[0] == 'pr':
+        global _WORKER_PR
+        if _WORKER_PR is None:
+            _WORKER_PR = PathRelinking(d)
+        _, xa, ya, xb, yb = task
+        # x is shipped along with y: re-deriving it with `repair` would
+        # discard the `polish_x` the elite solutions already carry, and
+        # the walk is scored against the parents' costs.
+        a, b = Solution(d), Solution(d)
+        a.x, a.y = xa.copy(), ya.copy()
+        b.x, b.y = xb.copy(), yb.copy()
+        a.compute_cost()
+        b.compute_cost()
+        cand = _WORKER_PR.relink(a, b)
+        cand.compute_cost()
+        return cand.x, cand.y, cand.cost, cand.open_dc, _get_eval_count()
+
+    _, alpha, seed_y = task
 
     if seed_y is not None:
         sol = Solution(d)
@@ -1110,8 +1141,8 @@ class GRASP:
     # best-tracking, path relinking, shake) the serial version uses.
     # ----------------------------------------------------------
     def _run_parallel(self):
+        # `ls` is for shake only; path relinking now runs in the workers
         ls = LocalSearch(self.data)
-        pr = PathRelinking(self.data)
         elite = ElitePool(12)
         best = None
         best_cost = float('inf')
@@ -1137,11 +1168,25 @@ class GRASP:
                     seed = None
                     if elite.pool and random.random() < self.p_seed:
                         seed = random.choice(elite.pool).y
-                    tasks.append((alpha, seed))
+                    tasks.append(('ls', alpha, seed))
+
+                # Path relinking for the iterations in this batch that
+                # will call for one, queued into the same `pool.map` so
+                # it runs alongside the batch instead of blocking every
+                # worker afterwards. The parents are drawn from the pool
+                # as it stands at batch start rather than mid-batch --
+                # the same kind of staleness the batching already
+                # introduces for `alpha` and the ILS seeds.
+                n_pr = (sum(1 for off in range(batch) if (it + off) % 8 == 0)
+                        if len(elite.pool) >= 2 else 0)
+                for _ in range(n_pr):
+                    pa, pb = elite.best(), elite.random()
+                    tasks.append(('pr', pa.x, pa.y, pb.x, pb.y))
 
                 results = pool.map(_construct_and_improve, tasks)
+                pr_results = iter(results[batch:])
 
-                for x, y, cost, open_dc, evals in results:
+                for x, y, cost, open_dc, evals in results[:batch]:
                     _add_eval_count(evals)
                     sol = Solution(self.data)
                     sol.x, sol.y, sol.cost, sol.open_dc = x, y, cost, open_dc
@@ -1154,10 +1199,17 @@ class GRASP:
                         time_to_best = time.time() - start
                         print(f'[{it}] best = {best_cost}')
 
-                    # path relinking every 8 iterations
-                    if it % 8 == 0 and len(elite.pool) >= 2:
-                        cand = pr.relink(elite.best(), elite.random())
-                        if cand:
+                    # path relinking every 8 iterations -- computed in the
+                    # worker pool above, applied here in the same order
+                    # and at the same iteration as the serial version
+                    if it % 8 == 0:
+                        pr_res = next(pr_results, None)
+                        if pr_res is not None:
+                            px, py, pcost, popen, pevals = pr_res
+                            _add_eval_count(pevals)
+                            cand = Solution(self.data)
+                            cand.x, cand.y = px, py
+                            cand.cost, cand.open_dc = pcost, popen
                             elite.add(cand)
                             if cand.cost < best_cost:
                                 best = cand.copy()
