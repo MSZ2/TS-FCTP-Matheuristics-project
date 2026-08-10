@@ -159,7 +159,7 @@ def repair(sol, data):
 # First-stage polish: 4-cycle exchanges on x with y held fixed
 # ============================================================
 
-def polish_x(sol, data, max_moves=200, max_arcs=600):
+def polish_x(sol, data, max_moves=200, max_arcs=None):
     """
     Improve the first stage (suppliers -> DCs) without touching y.
 
@@ -190,7 +190,15 @@ def polish_x(sol, data, max_moves=200, max_arcs=600):
 
     Best-improvement, at most `max_moves` moves. Returns True if the
     solution got cheaper.
+
+    `max_arcs` is a cap on the *structure*, not a sampling budget: the
+    number of used arcs is O(I + J), so a flat 600 was comfortably slack
+    on small (I + J = 12) and started to bind on large (I + J up to
+    480). It therefore scales with I + J, floored at the old 600 so no
+    instance ever sees a tighter cap than before.
     """
+    if max_arcs is None:
+        max_arcs = max(600, 2 * (data.I + data.J))
     b, f = data.b, data.f
     improved = False
 
@@ -350,13 +358,44 @@ class LocalSearch:
     VND is what actually makes a restart explore a different region.
     """
 
-    # How many second-stage-improving targets `_reassign_customer` puts
-    # through a full (repair + eval_cost) evaluation. The move was 58 %
-    # of total runtime because it fully evaluated every one of up to
-    # min(J, 36) ranked targets; `_shift_flow` already screens the same
-    # way (`max_trials`). A class attribute so experiments can sweep it
-    # without editing the move.
+    # ---- per-move screening budgets -------------------------------
+    #
+    # Every candidate a move evaluates in full costs a `repair()` (which
+    # is O(I*J)) plus a cost evaluation, so each of these caps the work
+    # one move does per call. They are deliberately *absolute* rather
+    # than proportional to I/J/K: the neighbourhoods grow with instance
+    # size but the cost per candidate grows too, and total progress is
+    # iterations x depth-per-iteration. A fixed-size sample of a growing
+    # neighbourhood is the right shape for a first-improvement search --
+    # widening them trades restarts for depth, and on the large
+    # instances (100 iterations) the search is starved of restarts, not
+    # of depth.
+    #
+    # They live here as class attributes purely so experiments can sweep
+    # them without rewriting the moves; the values are unchanged.
+    #
+    # NOTE: none of these have been calibrated on anything but small_1,
+    # where most of them never bind at all (J = 8 makes `min(J, 36)`
+    # just 8). Before tuning any of them, measure how often each one
+    # actually truncates on medium/large.
+
+    # `_reassign_customer`: second-stage-improving targets put through a
+    # full evaluation. The move was 58 % of total runtime when it
+    # evaluated all min(J, 36) ranked targets.
     MAX_FULL_TARGETS = 6
+    # ... plus this many random non-improving targets, for exploration
+    N_EXPLORE = 2
+
+    # `_shift_flow`: arcs sampled, and candidates fully evaluated
+    SHIFT_MAX_ARCS = 200
+    SHIFT_MAX_TRIALS = 40
+
+    # `_add_dc` / `_remove_dc`: DCs tried per call
+    ADD_MAX_CANDIDATES = 36
+    REMOVE_MAX_CANDIDATES = 20
+
+    # `_swap_dc`: (open, closed) pairs tried per call
+    SWAP_MAX_PAIRS = 150
 
     def __init__(self, data, allowed_dc=None):
         self.data = data
@@ -465,7 +504,7 @@ class LocalSearch:
         """
         d = self.data
         max_targets = min(d.J, self.MAX_FULL_TARGETS)
-        n_explore = 2
+        n_explore = self.N_EXPLORE
 
         # Cost currently incurred serving each customer, summed over
         # every DC feeding it (a customer's demand can be split).
@@ -526,8 +565,8 @@ class LocalSearch:
         whose gain lives in the first stage.
         """
         d = self.data
-        max_arcs = 200
-        max_trials = 40
+        max_arcs = self.SHIFT_MAX_ARCS
+        max_trials = self.SHIFT_MAX_TRIALS
         S = max(1, int(d.s.min()))
 
         jf, kk = np.nonzero(sol.y)
@@ -612,7 +651,7 @@ class LocalSearch:
             return False
 
         random.shuffle(closed)
-        max_candidates = min(len(closed), 36)
+        max_candidates = min(len(closed), self.ADD_MAX_CANDIDATES)
 
         jf, kk = np.nonzero(sol.y)
         if len(jf) == 0:
@@ -648,7 +687,7 @@ class LocalSearch:
             return False
 
         random.shuffle(open_dcs)
-        max_candidates = min(len(open_dcs), 20)
+        max_candidates = min(len(open_dcs), self.REMOVE_MAX_CANDIDATES)
 
         for j in open_dcs[:max_candidates]:
             trial = sol.copy()
@@ -697,7 +736,7 @@ class LocalSearch:
         # Sample pairs without replacement; when the cap covers the whole
         # product, use the full (shuffled) Cartesian product instead of
         # drawing 150 times with repetition.
-        n_pairs = min(150, len(open_list) * len(closed))
+        n_pairs = min(self.SWAP_MAX_PAIRS, len(open_list) * len(closed))
         if n_pairs == len(open_list) * len(closed):
             pairs = [(o, c) for o in open_list for c in closed]
             random.shuffle(pairs)
@@ -860,7 +899,24 @@ class PathRelinking:
                 best, best_cost = cur.copy(), cur.cost
         return best
 
-    def relink(self, a, b, max_steps=15, max_cand=8):
+    def relink(self, a, b, max_steps=None, max_cand=8):
+        """
+        `max_steps` is a fraction of the path, not a work budget.
+
+        The walk exchanges one customer column per step, so a path
+        between two solutions is up to K steps long. A flat 15 covered
+        essentially the whole path on small_1 (K = 16) but only ~2 % of
+        it on the large instances (K = 800) -- the walk would stop right
+        next to its starting parent and never reach the middle of the
+        path, which is where path relinking expects to find anything
+        worth keeping. So it scales with K, floored at the old 15.
+
+        `max_cand` stays absolute: that one *is* a sampling budget (how
+        many candidate columns are scored per step), and each candidate
+        costs a repair.
+        """
+        if max_steps is None:
+            max_steps = max(15, self.data.K // 4)
         # relink in both directions -- the two paths are different
         best = None
         for src, dst in ((a, b), (b, a)):
