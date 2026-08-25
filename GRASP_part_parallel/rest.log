@@ -1,0 +1,8 @@
+=== [2026-08-19 15:38:21] medium 15-20 (iters=1000, runs=10)
+=== [2026-08-19 15:38:21] Running: medium_15 (iters=1000, runs=10)
+I=45, J=90, K=225, supply=3600, demand=3600
+
+Instance loaded:
+I=45, J=90, K=225
+
+--- Run 1/10 seed=42 ---

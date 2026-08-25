@@ -8,23 +8,23 @@ Platform (MA run): Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39,
 Optimal / best-known (if available): 213785.0
 Time to obtain optimal / best-known : 2.06
 Bestsol (reference used for gap %)  : 213785.0
-Best MA cost across 10 runs      : 216677
+Best MA cost across 10 runs      : 215740
 
 --- Per-run results ---
  run        sol_i     t_i(s)  ttot_i(s)     eval_i   gap_i(%)
-   1       217734      25.06      32.36    2496588       1.85
-   2       217734      24.58      30.99    2477341       1.85
-   3       218858      16.86      32.97    2468265       2.37
-   4       219285      27.66      30.78    2482143       2.57
-   5       219609       2.20      32.09    2487844       2.72
-   6       219515      21.10      33.70    2511366       2.68
-   7       219419       9.79      33.22    2522134       2.64
-   8       219095      23.37      32.41    2453619       2.48
-   9       217106       8.72      33.03    2509176       1.55
-  10       216677      31.67      33.54    2504547       1.35
+   1       218515      14.36      36.23    2365527       2.21
+   2       219609       0.46      38.85    2409836       2.72
+   3       218818      46.81      48.71    2383948       2.35
+   4       219609       8.79      39.82    2347521       2.72
+   5       215740      25.67      40.90    2306109       0.91
+   6       219095      25.14      40.22    2360039       2.48
+   7       216983      32.19      38.59    2321236       1.50
+   8       216677      14.03      37.48    2351861       1.35
+   9       218668      35.79      37.42    2333979       2.28
+  10       219609       3.07      39.06    2332365       2.72
 
 --- Averages over 10 runs ---
-Mean time to best (t)     : 19.10 s
-Mean total time (ttot)    : 32.51 s
-Mean eval calls (eval)    : 2491302.3
-Mean gap (agap) ± std (σ) : 2.21 ± 0.48 %
+Mean time to best (t)     : 20.63 s
+Mean total time (ttot)    : 39.73 s
+Mean eval calls (eval)    : 2351242.1
+Mean gap (agap) ± std (σ) : 2.13 ± 0.61 %
