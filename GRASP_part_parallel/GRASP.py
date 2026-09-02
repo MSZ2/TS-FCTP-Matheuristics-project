@@ -7,14 +7,6 @@ import multiprocessing as mp
 # ============================================================
 # Objective-function call counter (eval_i in the MA report)
 # ============================================================
-#
-# Per-process counter: in serial mode there is only one process, so
-# reading it at the end of run() gives the true total. In parallel
-# mode each worker process has its own independent counter; workers
-# report their own count back per task (see _construct_and_improve)
-# and the main process folds it into its own running total, which
-# also picks up the compute_cost() calls made directly in the main
-# process (path relinking, shake).
 
 _EVAL_COUNT = 0
 
@@ -59,22 +51,7 @@ class Solution:
         return s
 
     def eval_cost(self):
-        """
-        Objective value only -- `open_dc` is deliberately NOT refreshed.
-
-        This is the screening path: local search evaluates ~2000 trials
-        per iteration and rejects almost all of them, and a rejected
-        trial's `open_dc` is never read. Building it cost 27-29 % of the
-        old `compute_cost` (a J-wide pair of axis-sums plus a Python
-        `set`), so it now happens only on acceptance, via
-        `refresh_open_dc()`.
-
-        Flat dot products instead of `np.sum(x * b)`: the latter
-        materialises an I x J temporary per term, which on the small
-        instances is pure numpy dispatch overhead. Measured on small_1
-        the whole call goes 13.30 us -> 3.99 us; the value is identical
-        (integer dot products, no floating point involved).
-        """
+        """Compute and store the objective value (does not refresh `open_dc`)."""
         _bump_eval_count()
         d = self.data
         xr, yr = self.x.ravel(), self.y.ravel()
@@ -89,7 +66,7 @@ class Solution:
         self.open_dc = set(np.flatnonzero(open_mask).tolist())
 
     def compute_cost(self):
-        """Cost + `open_dc`, for callers that need a fully consistent solution."""
+        """Compute the cost and refresh `open_dc`."""
         self.eval_cost()
         self.refresh_open_dc()
         return self.cost
@@ -106,49 +83,7 @@ class Solution:
 # ============================================================
 
 def repair(sol, data):
-    """
-    Assign suppliers (x) to meet the DC demands given by y.
-
-    Same greedy as before: DCs in index order, and for each DC the
-    suppliers cheapest-first (ties broken by largest remaining capacity),
-    each giving everything it has left until the DC's demand is met.
-
-    This runs on every one of the ~2000 trials per local-search
-    iteration and was 53-60 % of total runtime, so the two per-DC numpy
-    allocations are what matter -- not the inner loop, which almost
-    always breaks after one or two suppliers (s[i] = 80 covers most
-    single-DC demands). Two changes, both order-preserving:
-
-      * the J separate `sol.y[j].sum()` calls collapse into one axis-sum;
-      * the sort key `b[:,j] + f[:,j]/rem` becomes the integer
-        `b[:,j]*rem + f[:,j]`, which is the same key scaled by rem > 0.
-        Same ranking, no float division, no float temporary -- and it
-        cannot lose precision the way the division could.
-
-    Measured 1.4x (small_1) to 2.2x (medium_1) faster, with identical
-    `x` on 1000 sampled local-search states. Fully vectorising the inner
-    loop (cumsum + searchsorted over all suppliers) was also tried and
-    was *slower* -- it does O(I) work where the loop's early break does
-    O(1-2).
-
-    This function is 38.9 % of runtime on small_1 and 72.8 % on large_1,
-    so it is the obvious thing to optimise further. It has been tried
-    and it does not pay off. Hoisting the per-DC key and sort out of the
-    loop -- `keys = b * demands + f` and one (I, J) argsort, restricted
-    to DCs with non-zero demand, with the `-rem_s` tie-break only for
-    columns whose key actually ties -- is bit-identical (0 mismatches in
-    `x` and in feasibility over 16000 states sampled from real searches)
-    and cuts the sorting itself from 310 us to 147 us per call on
-    large_1. But end to end it gives 1.68x on medium_1, 0.88x on
-    small_1 and 1.04x on large_1: the numpy per-call overhead it removes
-    only dominates when I is small and J is large. On small_1 the
-    original sorts arrays of *four* elements, so there is no overhead to
-    remove and six extra vectorised calls are pure loss; on large_1
-    there is enough real work per column that the overhead never
-    dominated. Converting the ranking with `tolist()` for a cheaper
-    inner loop makes it worse still -- it is eager, materialising all I
-    suppliers per DC while the loop stops after one or two.
-    """
+    """Greedily assign suppliers (x) to meet the DC demands given by y, cheapest supplier first per DC."""
     sol.x.fill(0)
     rem_s = data.s.copy()
     demands = sol.y.sum(axis=1)
@@ -178,43 +113,7 @@ def repair(sol, data):
 # ============================================================
 
 def polish_x(sol, data, max_moves=200, max_arcs=None):
-    """
-    Improve the first stage (suppliers -> DCs) without touching y.
-
-    `repair()` is a greedy that walks DCs in index order, so DC 0 always
-    gets first pick of the cheapest suppliers; its output is not even
-    locally optimal w.r.t. the simplest transportation move. This does
-    the missing local search:
-
-        x[i1,j1] -= d ;  x[i1,j2] += d
-        x[i2,j2] -= d ;  x[i2,j1] += d
-
-    which preserves both the row sums (supplier usage) and the column
-    sums (DC throughput), so feasibility and `open_dc` are untouched.
-
-    Candidates are pairs of *currently used* arcs (x > 0) with distinct
-    suppliers and distinct DCs -- there are only O(I + J) used arcs, so
-    the whole neighbourhood is an n x n numpy computation. The delta is
-    evaluated in closed form (no compute_cost() per candidate):
-
-        D = d*(b[i1,j2] + b[i2,j1] - b[i1,j1] - b[i2,j2])
-          + f[i1,j2]*[x[i1,j2] = 0] + f[i2,j1]*[x[i2,j1] = 0]
-          - f[i1,j1]*[x[i1,j1] = d] - f[i2,j2]*[x[i2,j2] = d]
-
-    Only d = min(x[i1,j1], x[i2,j2]) is tried: D is linear in d plus
-    fixed terms that fire only when an arc closes, which needs d = dmax.
-    If the variable term is negative, bigger d is better (dmax); if it
-    is positive, the only possible gain is the fixed saving (also dmax).
-
-    Best-improvement, at most `max_moves` moves. Returns True if the
-    solution got cheaper.
-
-    `max_arcs` is a cap on the *structure*, not a sampling budget: the
-    number of used arcs is O(I + J), so a flat 600 was comfortably slack
-    on small (I + J = 12) and started to bind on large (I + J up to
-    480). It therefore scales with I + J, floored at the old 600 so no
-    instance ever sees a tighter cap than before.
-    """
+    """Improve the first stage (suppliers -> DCs) with 4-cycle exchanges, y held fixed. Returns True if improved."""
     if max_arcs is None:
         max_arcs = max(600, 2 * (data.I + data.J))
     b, f = data.b, data.f
@@ -275,25 +174,7 @@ def polish_x(sol, data, max_moves=200, max_arcs=None):
 # ============================================================
 
 def random_dc_mask(J, p_restrict=0.5, min_frac=0.35):
-    """
-    Boolean mask of DCs the construction is allowed to use, or None for
-    "all of them".
-
-    Diversification at the DC level. `alpha` only randomises *which
-    cheap (supplier, DC) pair* is picked, not *which set of DCs* the
-    solution ends up with: the generator sets f = b*r with r in [10,15],
-    so the RCL score `b + f/need` is dominated by `b` and the same few
-    cheap DCs win every restart regardless of alpha. Measured on
-    small_5 (J = 12): 80 restarts produced only 9 distinct DC sets out
-    of 2^12 possible, and the elite pool collapsed to near-clones
-    (mean Jaccard distance 0.07).
-
-    Blacklisting a random subset of DCs per restart forces the greedy
-    into a different region. Feasibility is never at risk: there is no
-    DC capacity, so any non-empty allowed set can absorb all demand.
-    Local search may still open blacklisted DCs afterwards -- the mask
-    only biases the starting point.
-    """
+    """Random boolean mask of DCs the construction is allowed to use, or None for all of them."""
     if random.random() >= p_restrict:
         return None
     lo = max(1, int(J * min_frac))
@@ -312,15 +193,7 @@ class Construction:
         self.allowed_dc = allowed_dc
 
     def build(self):
-        # Vectorised candidate scoring: the same RCL/alpha logic as
-        # before, but the I x J candidate matrix is built and masked
-        # with numpy instead of a Python double loop + list of tuples.
-        # This is the dominant cost of construction on large instances
-        # (I, J in the hundreds), so vectorising it is where most of
-        # the speedup comes from. Note: `j in sol.open_dc` in the old
-        # loop was always False here (open_dc is only populated by
-        # compute_cost(), called after construction finishes), so
-        # dropping that dead multiplier changes nothing.
+        """Greedy-randomized construction: assign demand largest-first, picking from an RCL of cheap (supplier, DC) pairs."""
         d = self.data
         sol = Solution(d)
         rem_s = d.s.copy()
@@ -366,42 +239,13 @@ class Construction:
 # ============================================================
 
 class LocalSearch:
-    """
-    `allowed_dc` is an optional boolean mask restricting which DCs the
-    DC-opening moves may use. Without it, blacklisting DCs in the
-    construction is pointless: `_add_dc` / `_swap_dc` simply re-open
-    them and every restart converges back to the same DC set (measured
-    on small_5: 80 restarts -> 9 distinct DC sets with or without a
-    construction-only mask). Keeping the restriction alive through the
-    VND is what actually makes a restart explore a different region.
-    """
+    """VND local search over DC-structure moves. `allowed_dc` restricts which closed DCs a move may open."""
 
-    # ---- per-move screening budgets -------------------------------
-    #
-    # Every candidate a move evaluates in full costs a `repair()` (which
-    # is O(I*J)) plus a cost evaluation, so each of these caps the work
-    # one move does per call. They are deliberately *absolute* rather
-    # than proportional to I/J/K: the neighbourhoods grow with instance
-    # size but the cost per candidate grows too, and total progress is
-    # iterations x depth-per-iteration. A fixed-size sample of a growing
-    # neighbourhood is the right shape for a first-improvement search --
-    # widening them trades restarts for depth, and on the large
-    # instances (100 iterations) the search is starved of restarts, not
-    # of depth.
-    #
-    # They live here as class attributes purely so experiments can sweep
-    # them without rewriting the moves; the values are unchanged.
-    #
-    # NOTE: none of these have been calibrated on anything but small_1,
-    # where most of them never bind at all (J = 8 makes `min(J, 36)`
-    # just 8). Before tuning any of them, measure how often each one
-    # actually truncates on medium/large.
+    # ---- per-move screening budgets: how many candidates each move
+    # ranks and then fully evaluates per call -----------------------
 
-    # `_reassign_customer`: second-stage-improving targets put through a
-    # full evaluation. The move was 58 % of total runtime when it
-    # evaluated all min(J, 36) ranked targets.
+    # `_reassign_customer`
     MAX_FULL_TARGETS = 6
-    # ... plus this many random non-improving targets, for exploration
     N_EXPLORE = 2
 
     # `_shift_flow`: arcs sampled, and candidates fully evaluated
@@ -423,27 +267,7 @@ class LocalSearch:
         self.allowed_dc = allowed_dc
 
     def improve(self, sol, max_no_improve=10):
-        """
-        VND with first‑improvement and bounded candidate evaluations.
-        All neighbourhoods are checked in order; on success we reset.
-
-        Order matters: the four coarse (whole-customer / whole-DC) moves
-        run first because they are cheap, and `_shift_flow` -- the only
-        move that can *create* a split by moving part of an arc -- runs
-        last, i.e. it fine-tunes the split structure once the coarse
-        moves are exhausted.
-
-        Two-level evaluation. Inside the VND every candidate is scored
-        with plain `repair()`, so all comparisons share one basis. The
-        incoming solution is re-`repair()`ed for the same reason: an
-        already-polished `x` (arriving from PR or shake) would make the
-        incumbent look cheaper than every trial and freeze the search.
-        `polish_x` then runs once, at convergence, so everything leaving
-        this method carries a genuinely optimised first stage -- which
-        keeps the elite pool, best-tracking, PR and shake consistent
-        with each other, since all of them only ever see solutions that
-        came out of here.
-        """
+        """VND with first-improvement: cycle through the five neighbourhoods until none improves, then polish x."""
         repair(sol, self.data)
         sol.compute_cost()
         no_improve = 0
@@ -481,14 +305,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _accept(self, sol, trial):
-        """
-        Repair x, evaluate, and copy `trial` into `sol` if it is better.
-
-        `eval_cost()` rather than `compute_cost()`: `open_dc` is only
-        refreshed on the accepting branch, since a rejected trial's is
-        never read. Every move reads `sol.open_dc`, so the kept solution
-        must still carry a correct one.
-        """
+        """Repair x, evaluate, and copy `trial` into `sol` if it is cheaper."""
         if not repair(trial, self.data):
             return False
         trial.eval_cost()
@@ -503,26 +320,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _reassign_customer(self, sol):
-        """
-        Consolidation move: put *all* of a customer's flow on one DC.
-
-        This is deliberately a single-source move -- it is the move that
-        *undoes* a split. It is no longer the only customer-level move
-        (see `_shift_flow`, which does the opposite), so restricting it
-        to single-sourcing no longer biases the search.
-
-        The second-stage cost is used to *rank* target DCs, not to veto
-        them: the previous hard filter `new_full < old_full[k]` made the
-        move blind to consolidations that pay off only in the first
-        stage. A small random exploration quota is evaluated on top of
-        the second-stage-improving targets.
-
-        Only the `MAX_FULL_TARGETS` best-ranked improving targets are
-        evaluated in full, since `new_full` already orders them by exact
-        second-stage cost -- the same two-level screening `_shift_flow`
-        uses. Evaluating all min(J, 36) of them made this move 58 % of
-        total runtime.
-        """
+        """Consolidation move: try putting all of a customer's flow on a single other DC."""
         d = self.data
         max_targets = min(d.J, self.MAX_FULL_TARGETS)
         n_explore = self.N_EXPLORE
@@ -558,33 +356,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _shift_flow(self, sol):
-        """
-        Split-aware move: shift a *partial* quantity of one arc
-        (j_from -> k) onto another DC j_to.
-
-        This is the move that lets the search reach solutions in which a
-        customer is served by several DCs at once. Splitting is never
-        profitable in the second stage alone (c*q is linear and g is a
-        pure surcharge), so it only ever pays off through the first
-        stage: every supplier holds only s[i] = 80 units, so the
-        marginal inbound cost of a DC *rises* with its throughput once
-        its cheap suppliers are exhausted. Spreading a customer over two
-        DCs can therefore be strictly cheaper overall.
-
-        Candidate quantities per arc (q = y[j_from, k]):
-          * q            -- move the whole arc
-          * q // 2       -- halve the arc
-          * t[j_from] % S -- make the *source* DC's throughput a multiple
-                             of the supplier capacity S = min(s), which
-                             can free a whole supplier arc in stage 1
-          * (-t[j_to]) % S -- same, for the *target* DC
-
-        All (arc, quantity, target) candidates are scored by their exact
-        second-stage delta, and the `max_trials` least-penalising ones
-        are evaluated in full (repair + compute_cost, first improvement).
-        Positive-delta candidates are explicitly kept: they are the ones
-        whose gain lives in the first stage.
-        """
+        """Split-aware move: shift a partial quantity of one arc (j_from -> k) onto another DC j_to."""
         d = self.data
         max_arcs = self.SHIFT_MAX_ARCS
         max_trials = self.SHIFT_MAX_TRIALS
@@ -648,23 +420,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _add_dc(self, sol):
-        """
-        Try opening a closed DC, migrating flow to it **arc by arc**.
-
-        Previously this move wiped every affected customer's whole
-        column (`y[:, ks] = 0`) and dumped `d.d[k]` onto the new DC, so
-        opening a DC always destroyed existing splits and produced a
-        single-source assignment for every customer it touched. Now each
-        existing arc (j, k) is evaluated on its own: a customer served
-        by two DCs may migrate only one of its two arcs, and customers
-        keep whatever split they had for the arcs that stay put.
-
-        Two trials per candidate DC:
-          1. migrate every arc with a negative second-stage delta;
-          2. migrate only the 3 least-penalising arcs -- an exploratory
-             trial that can open a DC whose payoff is in the first stage
-             (relieving an overloaded DC's expensive suppliers).
-        """
+        """Try opening a closed DC, migrating flow to it arc by arc."""
         d = self.data
         closed = [j for j in range(d.J)
                   if j not in sol.open_dc and self._may_open(j)]
@@ -680,7 +436,6 @@ class LocalSearch:
         q = sol.y[jf, kk]
 
         for j_new in closed[:max_candidates]:
-            # exact second-stage delta of migrating arc (jf, kk) to j_new
             delta = q * (d.c[j_new, kk] - d.c[jf, kk]) \
                 - d.g[jf, kk] + d.g[j_new, kk]
 
@@ -699,9 +454,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _remove_dc(self, sol):
-        """
-        Try closing an open DC (first‑improvement, at most 20 candidates).
-        """
+        """Try closing an open DC, reassigning its flow to the cheapest remaining alternative."""
         d = self.data
         open_dcs = list(sol.open_dc)
         if len(open_dcs) <= 1:
@@ -716,9 +469,6 @@ class LocalSearch:
             if not alts:
                 continue
 
-            # Vectorised "best alternative DC per reassigned customer":
-            # replaces an O(len(alts) * K) Python double loop with a
-            # small (len(alts) x |served customers|) numpy computation.
             ks = np.flatnonzero(trial.y[j] > 0)
             if len(ks) > 0:
                 alts_arr = np.array(alts)
@@ -737,39 +487,7 @@ class LocalSearch:
 
     # -----------------------------------------------------------------
     def _swap_dc(self, sol):
-        """
-        Swap one open DC with one closed DC (first-improvement).
-
-        The freed arcs are redistributed the same way `_remove_dc` does
-        it -- each customer goes to whichever of {the newly opened DC} u
-        {the other open DCs} is cheapest for it. Dumping the whole DC on
-        the new one, as before, made this move strictly coarser than
-        `_remove_dc` for no reason.
-
-        Two-level screening, like `_shift_flow` and `_reassign_customer`
-        already do. This move used to build a trial and call `repair()`
-        for every one of up to 150 sampled pairs, which is by far the
-        most repairs any single move performs. But the *exact*
-        second-stage cost of a swap is available in closed form -- the
-        move already computes it internally to choose targets -- so all
-        pairs are ranked by it and only `SWAP_MAX_TRIALS` are evaluated
-        in full, plus `SWAP_EXPLORE` random others (the ranking sees
-        only the second stage, so it must not veto).
-
-        Measured, 3 runs x 1000 iterations, full evaluation -> screened:
-
-          small_1   0.000 %  ->  0.000 %  (10/10 optimum kept)
-          small_3   1.334 %  ->  1.334 %
-          small_5   2.610 %  ->  1.964 %     33.2 s -> 30.9 s
-          small_8   4.982 %  ->  4.523 %     60.8 s -> 55.3 s
-          small_14  7.438 %  ->  7.298 %    167.3 s -> 133.3 s
-          small_18  4.377 %  ->  4.237 %    248.6 s -> 202.3 s
-
-        Never worse on quality, and 10-20 % faster on the instances big
-        enough for the cap to bind. The per-pair delta below is grouped
-        by `j_close` because the freed customers depend only on it, so
-        the whole (open x closed) grid costs |open| vectorised passes.
-        """
+        """Try swapping one open DC for one closed DC, reassigning freed flow to the cheapest alternative."""
         d = self.data
         open_list = list(sol.open_dc)
         closed = [j for j in range(d.J)
@@ -784,8 +502,6 @@ class LocalSearch:
             if len(ks) == 0:
                 continue
             qty = sol.y[j_close, ks]
-            # cost of serving each freed customer from each DC; the
-            # fixed charge applies only where the arc is not in use yet
             base = d.c[:, ks] * qty + np.where(sol.y[:, ks] == 0, d.g[:, ks], 0)
             others = [j for j in open_list if j != j_close]
             best_other = (base[np.array(others)].min(axis=0) if others
@@ -827,20 +543,7 @@ class LocalSearch:
 # ============================================================
 
 class ElitePool:
-    """
-    Elite pool with an explicit diversity criterion.
-
-    The old `add()` only rejected an exact duplicate (same DC set *and*
-    cost within 50) and otherwise kept the 12 cheapest solutions seen.
-    That makes the pool a clone set, which starves path relinking: on
-    small_5 the 12 members had a mean pairwise Jaccard distance between
-    their DC sets of 0.07, i.e. they were essentially the same solution.
-
-    The update rule now follows the standard elite-set policy: a
-    candidate that is too close to an existing member competes only
-    against *that* member, so a cheap solution can never crowd out the
-    pool's diversity -- it can only replace its own nearest neighbour.
-    """
+    """Keeps the top `size` solutions, enforcing a minimum Jaccard distance between their DC sets for diversity."""
 
     def __init__(self, size=12, min_dist=0.2):
         self.size = size
@@ -855,7 +558,7 @@ class ElitePool:
         return 1.0 if union == 0 else 1.0 - len(sa & sb) / union
 
     def add(self, sol):
-        # nearest current member
+        """Insert `sol` if it beats its nearest neighbour or the pool has room; evict the worst member when full."""
         near, near_d = None, 2.0
         for p in self.pool:
             dd = self._dist(p, sol)
@@ -863,20 +566,14 @@ class ElitePool:
                 near, near_d = p, dd
 
         full = len(self.pool) >= self.size
-        # While the pool has room, only exact clones are turned away --
-        # applying the distance rule from the start starves path
-        # relinking (it left the pool at 3-4 of 12 members).
         thr = self.min_dist if full else 0.0
 
         if near is not None and near_d <= thr:
-            # too similar to `near`: only allowed in by beating it
             if sol.cost < near.cost:
                 self.pool.remove(near)
             else:
                 return
         elif full:
-            # far enough from everyone, but the pool is full: displace
-            # the most expensive member, and only if we are cheaper
             worst = max(self.pool, key=lambda s: s.cost)
             if sol.cost >= worst.cost:
                 return
@@ -906,25 +603,7 @@ class ElitePool:
 # ============================================================
 
 class PathRelinking:
-    """
-    Column-exchange path relinking.
-
-    The old version ignored the flows of both parents entirely: it took
-    the union / intersection of their DC *sets* and then rebuilt `y`
-    from scratch with `trial.y[best_j, k] = d.d[k]`, i.e. every customer
-    single-sourced at its cheapest DC in that set. Whatever split
-    structure the two elite solutions had discovered was thrown away,
-    and every solution PR ever returned was single-source.
-
-    The new version walks an actual path between the two parents in
-    solution space. The key observation: in any feasible solution the
-    column `y[:, k]` sums to `d[k]`, so replacing the guest's column for
-    one customer with the host's column keeps the second stage feasible
-    exactly (only `x` has to be repaired). One customer column is
-    exchanged per step -- greedily, the cheapest of a sampled subset --
-    so intermediate solutions inherit real split structure from both
-    parents instead of being re-derived from a DC set.
-    """
+    """Column-exchange path relinking between two elite solutions."""
 
     def __init__(self, data):
         self.data = data
@@ -954,38 +633,12 @@ class PathRelinking:
                 break
             cur, diff = step_best, [k for k in diff if k != step_k]
             steps += 1
-            # the path is allowed to go uphill; we keep its best point
             if cur.cost < best_cost:
                 best, best_cost = cur.copy(), cur.cost
         return best
 
     def relink(self, a, b, max_steps=15, max_cand=8):
-        """
-        `max_steps` stays absolute, and deliberately short.
-
-        The walk exchanges one customer column per step, so a path
-        between two solutions is up to K steps long and a flat 15 covers
-        only ~2 % of it on the large instances. That looked like a
-        qualitative bug -- the walk stopping next to its starting parent
-        and never reaching the middle of the path, where path relinking
-        is supposed to find things -- so scaling it with K was tried:
-
-            large_1, 100 iterations, 1 run each
-              max_steps = 15  ->  831511 (gap 12.07 %), 1423 s
-              max_steps = 70  ->  834052 (gap 12.41 %), 1609 s
-
-        13 % slower for no gain. The classic middle-of-the-path argument
-        does not apply here: `relink` keeps the best point it sees and
-        then runs a full `ls.improve()` on it, so the descent does the
-        real work and the walk only has to supply a decent starting
-        point -- which turns out to sit near the parent. Longer walks
-        just spend evaluations on distant points that never pay off.
-
-        (The quality difference is inside this instance's run-to-run
-        spread of ~1.7 %; the point is that there is no evidence of a
-        gain, while the time cost is consistent and predicted.)
-        """
-        # relink in both directions -- the two paths are different
+        """Walk from a to b and from b to a, keep the best point seen, and run local search on it."""
         best = None
         for src, dst in ((a, b), (b, a)):
             cand = self._walk(src, dst, max_steps, max_cand)
@@ -999,33 +652,19 @@ class PathRelinking:
 # ============================================================
 # Parallel worker: construction + local search for one iteration
 # ============================================================
-#
-# Each iteration's construction+local search only depends on `alpha`
-# and shared instance data (never mutated), so a batch of iterations
-# can be built independently in worker processes. Only the cheap
-# result (flows + cost) is shipped back, not the (much larger,
-# read-only) instance data, which each worker keeps a copy of.
 
 _WORKER_DATA = None
 
 
 def _init_worker(data):
+    """Give each worker process its own copy of the instance data and RNG seed."""
     global _WORKER_DATA
     _WORKER_DATA = data
-    # Fork copies the parent's random state; reseed per-process so
-    # workers don't all draw the same RCL choices.
     random.seed(os.getpid() ^ int(time.time() * 1e6) & 0xFFFFFFFF)
 
 
 def perturb(sol, data, max_close=None):
-    """
-    ILS kick: close a random handful of open DCs and dump their arcs on
-    *random* other DCs.
-
-    Deliberately random rather than greedy -- a cost-driven relocation
-    is just a local-search move and the VND would undo it immediately.
-    The point is to land somewhere else and let the VND re-descend.
-    """
+    """ILS kick: close a random handful of open DCs and dump their arcs onto random other DCs."""
     open_dcs = list(sol.open_dc)
     if len(open_dcs) < 2:
         return
@@ -1044,43 +683,7 @@ def perturb(sol, data, max_close=None):
 
 
 def elite_dc_mask(sol, J, n_extra=1):
-    """
-    Mask confining an ILS re-descent to the seed's own DC configuration,
-    plus `n_extra` randomly chosen closed DCs.
-
-    The restart branch already runs its local search under the
-    construction's blacklist, for the reason spelled out there: a mask
-    that only covers the construction is useless, because `_add_dc`
-    immediately re-opens the blacklisted DCs and the restart lands back
-    in the same basin. The ILS branch used to skip the mask entirely and
-    so had exactly that problem -- every perturbation of an elite
-    solution drifted back into the generic basin, and the elite pool's
-    DC configuration (the one thing path relinking works to find) was
-    never actually intensified.
-
-    Measured on small_1 (1000 iterations, 3 runs): without the mask the
-    optimum 150568 is never reached (best 150906, 0/3); with it, 3/3, at
-    the same wall-clock. For scale: restricting construction + local
-    search to the single best DC subset reaches the optimum roughly once
-    per 40-120 restarts, so what was missing was not *finding* the right
-    DC set but *re-descending inside it*.
-
-    `n_extra` is the escape hatch. With 0 the DC set can only shrink to a
-    subset of the seed's under ILS, and new configurations have to come
-    from the restart branch, path relinking or shake -- fine on small_1,
-    where the restart branch finds the best subset on its own, but on the
-    larger instances (J = 40-320) it cannot, so the pool would hold
-    near-miss configurations with no way for ILS to walk out of them.
-    One extra DC makes each descent a 1-neighbourhood step in DC-set
-    space, at ~10 % more time per iteration.
-
-    Note the mask only blocks *opening a currently closed* DC (see
-    `_may_open` / the `shut` term in `_shift_flow`). `perturb` runs
-    before the local search and can dump flow on DCs outside the mask,
-    so the trajectory does leave the elite configuration -- it just
-    cannot return to those DCs once the search closes them. Perturb
-    pushes out, the mask ratchets back.
-    """
+    """Mask confining an ILS re-descent to the seed's own DC configuration, plus `n_extra` random closed DCs."""
     mask = np.zeros(J, dtype=bool)
     mask[list(sol.open_dc)] = True
     closed = np.flatnonzero(~mask)
@@ -1095,31 +698,12 @@ _WORKER_PR = None
 
 def _construct_and_improve(task):
     """
-    One parallel task. `task` is a tagged tuple; all three kinds return
-    the same 5-tuple (x, y, cost, open_dc, evals):
+    One parallel task; returns (x, y, cost, open_dc, evals).
 
-      * ('ls', alpha, None)    -> ordinary GRASP restart (construction +
-        VND) under a random DC blacklist.
-      * ('ls', alpha, seed_y)  -> ILS iteration: perturb an elite
-        solution and re-descend under `elite_dc_mask`, i.e. confined to
-        the seed's own DC configuration.
-      * ('pr', xa, ya, xb, yb) -> path relinking between two elite
-        solutions.
-
-    The ILS mode is the only intensification the algorithm has: without
-    it every worker starts from scratch and the diverse elite pool is
-    consumed by nothing but path relinking.
-
-    Path relinking runs here rather than in the main process because it
-    is not cheap: measured on small_1 it was 30 % of total wall-clock
-    while all `n_workers` workers sat idle waiting for the next batch.
-    It keeps its own worker-local `PathRelinking` (and thus
-    `LocalSearch`) instance, since building one per task would allocate
-    on every call.
+      * ('ls', alpha, None)    -> ordinary GRASP restart (construction + VND).
+      * ('ls', alpha, seed_y)  -> ILS iteration: perturb an elite solution and re-descend.
+      * ('pr', xa, ya, xb, yb) -> path relinking between two elite solutions.
     """
-    # Reset this worker's own counter so each task reports only the
-    # evals it personally performed (Pool reuses worker processes
-    # across many tasks, so the counter would otherwise keep growing).
     _reset_eval_count()
     d = _WORKER_DATA
 
@@ -1128,9 +712,6 @@ def _construct_and_improve(task):
         if _WORKER_PR is None:
             _WORKER_PR = PathRelinking(d)
         _, xa, ya, xb, yb = task
-        # x is shipped along with y: re-deriving it with `repair` would
-        # discard the `polish_x` the elite solutions already carry, and
-        # the walk is scored against the parents' costs.
         a, b = Solution(d), Solution(d)
         a.x, a.y = xa.copy(), ya.copy()
         b.x, b.y = xb.copy(), yb.copy()
@@ -1146,20 +727,12 @@ def _construct_and_improve(task):
         sol = Solution(d)
         sol.y = seed_y.copy()
         sol.compute_cost()
-        # drawn before `perturb`, so it describes the elite configuration
-        # we mean to intensify, not the kicked one
         mask = elite_dc_mask(sol, d.J)
         perturb(sol, d)
         sol = LocalSearch(d, mask).improve(sol)
         sol.compute_cost()
         return sol.x, sol.y, sol.cost, sol.open_dc, _get_eval_count()
 
-    # The DC blacklist is drawn here, in the worker, so each worker's own
-    # RNG diversifies it independently instead of all of them sharing one
-    # mask shipped from the main process.
-    # The mask must stay active through local search too -- restricting
-    # only the construction is useless, `_add_dc` just re-opens the
-    # blacklisted DCs and the restart lands in the same basin.
     mask = random_dc_mask(d.J)
     sol = Construction(d, alpha, mask).build()
     sol = LocalSearch(d, mask).improve(sol)
@@ -1175,28 +748,17 @@ class GRASP:
     def __init__(self, data, iters=300, n_workers=None, p_seed=0.5):
         self.data = data
         self.iters = iters
-        # fraction of iterations that perturb an elite solution (ILS)
-        # instead of building a fresh one
-        self.p_seed = p_seed
-        # Default to all cores but one, capped so tiny instances
-        # (few iterations) don't pay pool-startup overhead for nothing.
+        self.p_seed = p_seed  # fraction of iterations that perturb an elite solution (ILS) instead of restarting
         self.n_workers = n_workers or max(1, mp.cpu_count() - 1)
 
     def run(self):
-        """
-        Returns (best, best_cost, total_time, time_to_best, eval_count):
-          - total_time    : ttot_i, wall-clock time for this whole run
-          - time_to_best  : t_i, wall-clock time when `best` was first found
-          - eval_count    : eval_i, number of Solution.compute_cost() calls
-        """
+        """Run GRASP; returns (best, best_cost, total_time, time_to_best, eval_count)."""
         if self.n_workers <= 1:
             return self._run_serial()
         return self._run_parallel()
 
-    # ----------------------------------------------------------
-    # Serial fallback (n_workers=1, or explicitly requested)
-    # ----------------------------------------------------------
     def _run_serial(self):
+        """Serial GRASP loop (n_workers=1): restart or ILS re-descend each iteration, with periodic PR and shake."""
         ls = LocalSearch(self.data)
         pr = PathRelinking(self.data)
         elite = ElitePool(12)
@@ -1214,8 +776,6 @@ class GRASP:
                 alpha = random.uniform(0.05, 0.5)
 
             if elite.pool and random.random() < self.p_seed:
-                # ILS iteration: perturb an elite solution and re-descend,
-                # confined to its DC configuration (see `elite_dc_mask`)
                 sol = Solution(self.data)
                 sol.y = random.choice(elite.pool).y.copy()
                 sol.compute_cost()
@@ -1225,8 +785,6 @@ class GRASP:
             else:
                 mask = random_dc_mask(self.data.J)
                 sol = Construction(self.data, alpha, mask).build()
-                # masked LS for this restart; the shared unmasked `ls`
-                # stays for path relinking and shake
                 sol = LocalSearch(self.data, mask).improve(sol)
             sol.compute_cost()
             elite.add(sol)
@@ -1241,9 +799,6 @@ class GRASP:
             if it % 8 == 0 and len(elite.pool) >= 2:
                 cand = pr.relink(elite.best(), elite.random())
                 if cand:
-                    # PR output used to be discarded unless it beat the
-                    # incumbent; it is a fully improved solution and
-                    # belongs in the pool either way.
                     elite.add(cand)
                     if cand.cost < best_cost:
                         best = cand.copy()
@@ -1259,13 +814,8 @@ class GRASP:
         total_time = time.time() - start
         return best, best_cost, total_time, time_to_best, _get_eval_count()
 
-    # ----------------------------------------------------------
-    # Parallel: build+improve a batch of iterations concurrently,
-    # then apply the same sequential bookkeeping (elite pool,
-    # best-tracking, path relinking, shake) the serial version uses.
-    # ----------------------------------------------------------
     def _run_parallel(self):
-        # `ls` is for shake only; path relinking now runs in the workers
+        """Parallel GRASP: build+improve a batch of iterations concurrently, then apply the serial bookkeeping."""
         ls = LocalSearch(self.data)
         elite = ElitePool(12)
         best = None
@@ -1287,20 +837,11 @@ class GRASP:
                         alpha = random.uniform(0.4, 0.7)
                     else:
                         alpha = random.uniform(0.05, 0.5)
-                    # Half the batch intensifies around the elite pool
-                    # (ILS), half keeps generating fresh restarts.
                     seed = None
                     if elite.pool and random.random() < self.p_seed:
                         seed = random.choice(elite.pool).y
                     tasks.append(('ls', alpha, seed))
 
-                # Path relinking for the iterations in this batch that
-                # will call for one, queued into the same `pool.map` so
-                # it runs alongside the batch instead of blocking every
-                # worker afterwards. The parents are drawn from the pool
-                # as it stands at batch start rather than mid-batch --
-                # the same kind of staleness the batching already
-                # introduces for `alpha` and the ILS seeds.
                 n_pr = (sum(1 for off in range(batch) if (it + off) % 8 == 0)
                         if len(elite.pool) >= 2 else 0)
                 for _ in range(n_pr):
@@ -1323,9 +864,6 @@ class GRASP:
                         time_to_best = time.time() - start
                         print(f'[{it}] best = {best_cost}')
 
-                    # path relinking every 8 iterations -- computed in the
-                    # worker pool above, applied here in the same order
-                    # and at the same iteration as the serial version
                     if it % 8 == 0:
                         pr_res = next(pr_results, None)
                         if pr_res is not None:
@@ -1342,7 +880,6 @@ class GRASP:
                                 time_to_best = time.time() - start
                                 print(f'[{it}] PR = {best_cost}')
 
-                    # shake (ruin-and-recreate) when stuck for too long
                     if it - last_improvement > 20 and best:
                         best, best_cost, last_improvement, time_to_best = self._shake(
                             best, best_cost, it, ls, start, time_to_best, elite)
@@ -1355,10 +892,8 @@ class GRASP:
         total_time = time.time() - start
         return best, best_cost, total_time, time_to_best, _get_eval_count()
 
-    # ----------------------------------------------------------
-    # Ruin-and-recreate shake, shared by serial and parallel runs.
-    # ----------------------------------------------------------
     def _shake(self, best, best_cost, it, ls, start, time_to_best, elite=None):
+        """Ruin-and-recreate: close the costliest half of the open DCs and reconstruct, then re-improve."""
         d = self.data
         last_improvement = it
 
@@ -1399,8 +934,6 @@ class GRASP:
                 trial.compute_cost()
                 trial = ls.improve(trial)
                 if trial.is_valid():
-                    # the shaken solution is fully improved -- keep it in
-                    # the pool even when it does not beat the incumbent
                     if elite is not None:
                         elite.add(trial)
                     if trial.cost < best_cost:
