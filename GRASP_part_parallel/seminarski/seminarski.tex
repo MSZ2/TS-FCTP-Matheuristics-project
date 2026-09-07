@@ -86,10 +86,10 @@ Dvostepeni transportni problem sa fiksnim troškovima (engl.\
 \textit{Two-Stage Fixed-Charge Transportation Problem}, TS-FCTP) problem je
 kombinatorne optimizacije koji je prvi put uveden u radu Jawahar i Balaji
 \cite{jb2009}. Za svaku vezu u mreži definisana su dva troška: varijabilni,
-proporcionalan količini koja se njome prevozi, i fiksni, koji se plaća jednom
-ako se veza uopšte koristi, tj.\ ako je protok na njoj pozitivan. Cilj je
+proporcionalan količini koja se njome prevozi, i fiksni, koji se plaća samo
+jednom ako se veza koristi, tj.\ ako je protok na njoj pozitivan. Cilj je
 minimizacija ukupnog troška transporta uz poštovanje ograničenja kapaciteta
-dobavljača i tačno ispunjenje potražnje svih kupaca. Odluka o tome koje veze
+dobavljača i zadovoljenje potražnje svih kupaca. Odluka o tome koje veze
 će biti aktivirane (koji DC-ovi i koje veze će se koristiti) ima kombinatornu
 prirodu i čini problem suštinski težim od klasičnog transportnog problema, u
 kome se aktiviranje veza ne naplaćuje.
@@ -120,27 +120,31 @@ U matematičkoj formulaciji koriste se sledeće promenljive:
 \end{itemize}
 
 \textbf{Matematička formulacija.}
-Formulacija je preuzeta iz rada Calvete, Galé, Iranzo i Toth \cite{calvete2018},
+Formulacija je preuzeta iz rada Calvete et al.\ \cite{calvete2018},
 koji su, za razliku od prvobitne formulacije \cite{jb2009}, eksplicitno uveli i
 ograničenje balansa protoka u distributivnim centrima. Funkcija cilja glasi:
 \begin{equation} \label{eq:obj}
-\min \sum_{i \in I}\sum_{j \in J} \left( b_{ij}x_{ij} + f_{ij}z_{ij} \right)
-+ \sum_{j \in J}\sum_{k \in K} \left( c_{jk}y_{jk} + g_{jk}w_{jk} \right),
+\sum_{i \in I}\sum_{j \in J} \left( b_{ij}x_{ij} + f_{ij}z_{ij} \right)
++ \sum_{j \in J}\sum_{k \in K} \left( c_{jk}y_{jk} + g_{jk}w_{jk} \right)
 \end{equation}
-uz ograničenja:
+Cilj problema je minimizacija funkcije cilja \eqref{eq:obj} uz ograničenja:
 \begin{align}
 \sum_{j \in J} x_{ij} &\le s_i, && \forall i \in I, \label{eq:sup}\\
 \sum_{j \in J} y_{jk} &= d_k, && \forall k \in K, \label{eq:dem}\\
 \sum_{i \in I} x_{ij} - \sum_{k \in K} y_{jk} &= 0, && \forall j \in J, \label{eq:bal}\\
 x_{ij} &\le s_i\, z_{ij}, && \forall i \in I,\ \forall j \in J, \label{eq:bm1}\\
-y_{jk} &\le d_k\, w_{jk}, && \forall j \in J,\ \forall k \in K. \label{eq:bm2}
+y_{jk} &\le d_k\, w_{jk}, && \forall j \in J,\ \forall k \in K, \label{eq:bm2}\\
+z_{ij} &\in \{0,1\}, && \forall i \in I,\ \forall j \in J, \label{eq:domz}\\
+w_{jk} &\in \{0,1\}, && \forall j \in J,\ \forall k \in K, \label{eq:domw}\\
+x_{ij} &\ge 0, && \forall i \in I,\ \forall j \in J, \label{eq:domx}\\
+y_{jk} &\ge 0, && \forall j \in J,\ \forall k \in K. \label{eq:domy}
 \end{align}
 
 \textbf{Značenje funkcije cilja i ograničenja.}
 Funkcija cilja \eqref{eq:obj} minimizuje ukupni trošak distribucije: sabirci
 $b_{ij}x_{ij}$ i $c_{jk}y_{jk}$ su varijabilni troškovi, proporcionalni
 protoku, dok su $f_{ij}z_{ij}$ i $g_{jk}w_{jk}$ fiksni troškovi koji se plaćaju
-jednom ako se odgovarajuća veza koristi. Ograničenje \eqref{eq:sup} obezbeđuje
+samo jednom ako se odgovarajuća veza koristi. Ograničenje \eqref{eq:sup} obezbeđuje
 da nijedan dobavljač ne šalje više robe nego što ima na raspolaganju.
 Ograničenje \eqref{eq:dem} garantuje da se potražnja svakog kupca tačno
 zadovolji. Ograničenje \eqref{eq:bal} predstavlja balans protoka u
@@ -192,15 +196,18 @@ sastoji od dve faze:
   \item \textbf{Faza konstrukcije}: gradi se dopustivo rešenje
     pohlepno-nasumičnim pristupom. U svakom koraku formira se
     \textit{Restricted Candidate List} (RCL) -- skup kandidata čija je ocena u
-    opsegu $[\text{min},\, \text{min} + \alpha(\text{max}-\text{min})]$ -- i
-    nasumično se bira jedan element RCL-a. Parametar $\alpha \in [0,1]$
+    opsegu $[\text{min},\, \text{min} + \alpha(\text{max}-\text{min})]$, gde su
+    $\text{min}$ i $\text{max}$ najmanja, odnosno najveća ocena medu tekućim
+    kandidatima -- i nasumično se bira jedan element RCL-a. Parametar $\alpha \in [0,1]$
     kontroliše stepen nasumičnosti: $\alpha = 0$ odgovara čistoj pohlepnoj
     heuristici, a $\alpha = 1$ nasumičnom izboru.
   \item \textbf{Faza lokalne pretrage}: dobijeno rešenje se poboljšava
     lokalnom pretragom u skupu okolnih rešenja.
 \end{enumerate}
 Algoritam se ponavlja unapred zadati broj iteracija i pamti globalno najbolje
-pronađeno rešenje. Osnovni pseudokod GRASP-a dat je Algoritmom~\ref{alg:grasp}.
+pronađeno rešenje. Osnovni pseudokod GRASP-a dat je Algoritmom~\ref{alg:grasp}. Pseudokod faze
+konstrukcije (GreedyRandomizedConstruction) dat je Algoritmom~\ref{alg:grc};
+njegova konkretizacija za TS-FCTP data je Algoritmom~\ref{alg:construction}.
 
 \begin{algorithm}[H]
 \caption{Osnovni GRASP$(T, \alpha)$}
@@ -219,10 +226,27 @@ $\text{best\_cost} \leftarrow +\infty$\;
 \Return $sol^*$
 \end{algorithm}
 
-\subsection{Pojmovnik}
+\begin{algorithm}[H]
+\caption{GreedyRandomizedConstruction$(\alpha)$}
+\label{alg:grc}
+\SetAlgoLined
+$sol \leftarrow \varnothing$\;
+\While{rešenje nije kompletno}{
+  $C \leftarrow$ skup raspoloživih kandidata\;
+  Izračunaj pohlepnu ocenu $g(e)$ za svako $e \in C$\;
+  $g_{\min} \leftarrow \min_{e \in C} g(e)$;\quad
+  $g_{\max} \leftarrow \max_{e \in C} g(e)$\;
+  $\text{RCL} \leftarrow \{\, e \in C : g(e) \leq g_{\min} + \alpha(g_{\max} - g_{\min}) \,\}$\;
+  Nasumično izaberi $e^*$ iz RCL\;
+  Dodaj $e^*$ u $sol$ i ažuriraj skup $C$ i ocene\;
+}
+\Return $sol$
+\end{algorithm}
 
-Radi preglednosti, u nastavku su objašnjeni skraćeni i kolokvijalni nazivi
-koji se koriste u opisu implementacije:
+\subsection{Notacija}
+
+U nastavku su objašnjene oznake i skraćenice koje se koriste u opisu
+implementacije -- GRASP pojmovi prilagođeni rešavanju problema TS-FCTP:
 \begin{itemize}
   \item \textbf{DC} -- distributivni centar (čvor srednjeg sloja $J$).
   \item \textbf{I. etapa} -- transportna etapa dobavljač $\to$ DC (tokovi
@@ -274,8 +298,8 @@ Rešenje se predstavlja parom matrica toka i skupom otvorenih DC-ova:
     (DC $j$ je otvoren ako $\sum_i x_{ij} > 0$ ili $\sum_k y_{jk} > 0$).
 \end{itemize}
 
-Ukupni trošak rešenja računa metoda \texttt{compute\_cost()} kao sumu
-varijabilnih i fiksnih troškova u obe etape:
+Ukupni trošak rešenja (vrednost funkcije cilja) računa metoda
+\texttt{compute\_cost()} kao sumu varijabilnih i fiksnih troškova u obe etape:
 \begin{equation} \label{eq:cost}
 \text{cost}(x,y) = \sum_{i \in I}\sum_{j \in J} b_{ij}x_{ij}
 + \sum_{j \in J}\sum_{k \in K} c_{jk}y_{jk}
@@ -295,9 +319,13 @@ kapacitet svakog dobavljača i balans protoka u svakom DC-u.
 
 Ključna arhitekturalna odluka: tokom pretrage se direktno modifikuju
 isključivo $y$-tokovi (II. etapa); $x$-tokovi (I. etapa) se pri svakoj promeni
-$y$-toka iznova rekonstruišu pohlepnom procedurom \textsc{Repair}. Ovaj
-pristup smanjuje dimenzionalnost prostora pretrage jer algoritam nikad
-eksplicitno ne upravlja $x$-promenljivama.
+$y$-toka iznova rekonstruišu pohlepnom procedurom \textsc{Repair}. Iako se
+potezi u lokalnoj pretrazi zovu \texttt{\_add\_dc}, \texttt{\_remove\_dc} i
+\texttt{\_swap\_dc}, oni ne otvaraju/zatvaraju DC-ove nezavisno od tokova: DC
+je otvoren ako i samo ako kroz njega teče pozitivan tok, pa se svaki od tih
+poteza u stvari svodi na premeštanje $y$-tokova kojima se pojedini DC-ovi
+pune, odnosno prazne. Ovaj pristup smanjuje dimenzionalnost prostora pretrage
+jer algoritam nikad eksplicitno ne upravlja $x$-promenljivama.
 
 \subsubsection{Procedura \textsc{Repair}}
 
@@ -396,6 +424,15 @@ metodom \textit{first improvement} -- prvi pronađeni pomak koji smanjuje cenu
 prihvata se i pretraga se vraća na prvu okolinu. Ako nijedna okolina ne
 poboljša rešenje, brojač $no\_improve$ se uvećava; posle
 $\text{max\_no\_improve} = 10$ neuspešnih ciklusa pretraga se zaustavlja.
+Redosled okolina nije slučajan: okoline su poredane od manje ka sveobuhvatnijoj
+izmeni rešenja. \texttt{\_reassign\_customer} ne menja skup otvorenih DC-ova
+(kupac se seli na već otvoren DC); \texttt{\_add\_dc}, \texttt{\_remove\_dc} i
+\texttt{\_swap\_dc} menjaju sam skup otvorenih DC-ova, koji nosi ključnu
+kombinatornu odluku problema; \texttt{\_shift\_flow} na kraju fino podešava
+raspodelu cepanjem kupca i isplati se jedino kroz I. etapu. Kako VND posle
+svakog poboljšanja vraća na prvu okolinu, manje invazivni (i jeftiniji) potezi
+isprobavaju se češće, a sveobuhvatniji tek kada jednostavniji ne donose
+napredak.
 \begin{enumerate}
   \item \textbf{Preraspoređivanje kupca} (\texttt{\_reassign\_customer}): ovaj
     potez pokušava da kupca $k$, koga trenutno može opsluživati više DC-ova,
@@ -443,9 +480,13 @@ $\text{max\_no\_improve} = 10$ neuspešnih ciklusa pretraga se zaustavlja.
     cela veza, polovina veze, ili jedna od dve količine izračunate tako da
     posle premeštanja protok kroz izvorni odnosno ciljni DC postane
     umnožak kapaciteta jednog dobavljača -- to poslednje je bitno jer
-    dobavljači snabdevaju u celim komadima kapaciteta, pa DC čiji je protok
-    tačan umnožak kapaciteta može u potpunosti osloboditi jednog
-    (najskupljeg) dobavljača u I. etapi. Potez uzorkuje najviše $200$ veza,
+    \textsc{Repair} snabdeva DC redom, od najjeftinijeg dobavljača, uzimajući
+    cele kapacitete dobavljača (svaki iznosi 80). DC pritom zaista može imati
+    više dobavljača, ali svaki je iskorišćen u celosti. Ako protok DC-a nije
+    umnožak broja 80, na kraju ostaje ostatak (manji od 80) koji mora da
+    pokrije još jedan, najskuplji dobavljač -- angažovan samo za taj ostatak,
+    uz svoj fiksni trošak. Kad je protok umnožak broja 80, ostatka nema, pa
+    taj dodatni dobavljač za taj DC nije potreban. Potez uzorkuje najviše $200$ veza,
     za svaku računa tačnu promenu troška II. etape za sve četiri opcije, i
     redom (od najjeftinije ka najskupljoj) proba par (veza, količina, ciljni
     DC) dok neki ne smanji ukupnu cenu. Deljenje kupca samo po sebi nikad ne
@@ -454,7 +495,13 @@ $\text{max\_no\_improve} = 10$ neuspešnih ciklusa pretraga se zaustavlja.
     dobavljač ima ograničen kapacitet, pa kada se njegovi najjeftiniji
     dobavljači potroše, dalje snabdevanje jednog DC-a postaje sve skuplje;
     deljenje kupca na dva DC-a može tada biti jeftinije nego snabdevati ga
-    u celosti sa jednog.
+    u celosti sa jednog. Pomeranje toka u I. etapi ne definiše se kao zaseban
+    potez: $x$-tokovi se ne menjaju direktno, već se posle svake promene $y$
+    iznova računaju u \textsc{Repair}-u (najjeftiniji dobavljač prvi), pa svaka
+    ručno rađena izmena $x$ bez promene $y$ ne bi preživela naredni poziv
+    \textsc{Repair}-a. Čisto poboljšanje I. etape uz fiksirano $y$ već
+    sistematski radi \texttt{polish\_x} na kraju VND ciklusa, pa bi dodatni
+    potez između dva dobavljača bio suvišan.
 \end{enumerate}
 Razlog za dodatni korak je sama procedura \textsc{Repair}: ona obrađuje
 DC-ove redom po indeksu, pa DC $1$ uvek prvi bira najjeftinije dobavljače, a
@@ -465,7 +512,11 @@ poboljšava trošak I. etape. Ona radi isključivo u matrici $x$: bira dva
 postojeća luka $(i_1,j_1)$ i $(i_2,j_2)$ sa različitim dobavljačima i
 različitim DC-ovima, i razmenjuje po njima jednaku količinu $d$ unakrsno --
 $x_{i_1j_1}$ i $x_{i_2j_2}$ se umanje za $d$, a $x_{i_1j_2}$ i $x_{i_2j_1}$
-uvećaju za $d$ (tzv.\ četvorougaona razmena). Ovakva razmena ne menja ni
+uvećaju za $d$ (tzv.\ četvorougaona razmena). Količina $d$ bira se kao
+$d = \min(x_{i_1j_1},\, x_{i_2j_2})$ -- najveća vrednost koja se može
+oduzeti od oba luka a da nijedan tok ne postane negativan; luk s manjim
+tokom pritom se u potpunosti gasi, čime se štedi i njegov fiksni trošak.
+Ovakva razmena ne menja ni
 koliko svaki dobavljač ukupno isporučuje ni koliko svaki DC ukupno prima, pa
 $y$ i dopustivost rešenja ostaju netaknuti -- menja se samo \emph{koji}
 dobavljač snabdeva koji DC. Za svaki par lukova unapred se, bez pravljenja
@@ -889,7 +940,9 @@ izvršavanja; zatim se za svako izvršavanje računa
 \]
 U tabelama su prikazane srednje vrednosti $\bar t$, $\overline{ttot}$,
 $\overline{eval}$ i $\overline{gap}$, kao i standardna devijacija $\sigma$ (u
-\% gap-a), računate preko $k$ izvršavanja po instanci.
+\% gap-a), računate preko $k$ izvršavanja po instanci. Kolona \emph{Best MA} se
+razlikuje od ostalih: ona ne prikazuje srednju vrednost, već cenu najboljeg
+(najmanjeg) rešenja pronađenog u bilo kom od $k$ izvršavanja za datu instancu.
 
 \subsection{Male instance}
 
@@ -933,6 +986,8 @@ $\overline{eval}$ i $\overline{gap}$, kao i standardna devijacija $\sigma$ (u
 \multicolumn{4}{r}{\textbf{Prosek}} & 73.8 & 124.7 & 4462.4 & \textbf{3.73} & \textbf{0.39} \\
 \end{longtable}
 
+\clearpage
+
 \subsection{Srednje instance}
 
 \begin{longtable}{r l r r r r r r r}
@@ -974,6 +1029,8 @@ $\overline{eval}$ i $\overline{gap}$, kao i standardna devijacija $\sigma$ (u
 \midrule
 \multicolumn{4}{r}{\textbf{Prosek}} & 2484.9 & 2889.1 & 31619.8 & \textbf{7.67} & \textbf{0.62} \\
 \end{longtable}
+
+\clearpage
 
 \subsection{Velike instance}
 
@@ -1019,8 +1076,8 @@ toku i nije uključeno u proseke i analizu.
 
 Na malim instancama GRASP postiže prosečno odstupanje od $\overline{gap} =
 3{,}73\%$ ($\sigma = 0{,}39\%$) u odnosu na CPLEX referentnu vrednost, uz
-$k=10$ nezavisna izvršavanja po instanci. Na instanci~1 ($4 \times 8 \times
-16$) algoritam u svih 10 izvršavanja pronalazi tačno optimalno rešenje (gap
+$k=10$ nezavisnih izvršavanja po instanci. Na instanci~1 ($4 \times 8 \times
+16$) algoritam u svih 10 izvršavanja pronalazi optimalno rešenje (gap
 $0{,}00\%$), a na instancama~2 i~3 gap je manji od $2{,}5\%$. Standardna
 devijacija je mala (uglavnom ispod $0{,}7\%$), što ukazuje na konzistentno
 ponašanje algoritma za fiksirani budžet od $T=1000$ iteracija. Najveći gap
